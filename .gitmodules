@@ -5,7 +5,7 @@
 
 [submodule "3rdparty/dbg-macro"]
 	path = 3rdparty/dbg-macro
-	url = https://github.com/sharkdp/dbg-macro.git
+	url = https://github.com/sharkdp/dbg-macro
 	branch = master
 
 [submodule "3rdparty/PX4-Matrix"]
