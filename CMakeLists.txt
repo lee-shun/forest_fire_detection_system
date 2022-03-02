@@ -153,7 +153,6 @@ add_definitions(-DSUPPORT_STDIOSTREAM)
 
 
 add_subdirectory(src)
-add_subdirectory(scripts)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
