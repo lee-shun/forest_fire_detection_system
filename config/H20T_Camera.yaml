@@ -1,0 +1,25 @@
+# original(full) image szie 1920 x 1440 but after using recording, it will
+# change to 1920 x 1080 !!!!
+full_img_width: 1920
+full_img_height: 1080
+# full_img_height: 1440
+
+# pure image position in the full image by testing!
+# upper_bound: 336
+# lower_bound: 1106
+upper_bound: 156
+lower_bound: 926
+left_bound: 0
+right_bound: 1920
+
+# pure IR image size
+pure_IR_width: 960
+
+# 1106-336
+pure_IR_height: 770
+
+# pure RGB image size
+pure_RGB_width: 960
+
+# 1106-336
+pure_RGB_height: 770

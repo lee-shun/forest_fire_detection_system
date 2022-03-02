@@ -1,0 +1,9 @@
+<launch>
+  <node pkg = "tf2_ros" type = "static_transform_publisher" name = "tf2_map_world" args = "0 0 0 0 0 0 world map" />
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+    <param name="resolution" value="0.10" />
+    <param name="frame_id" type="string" value="map" />
+    <remap from="/cloud_in" to="/point_cloud/output" />
+  </node>
+</launch>
+

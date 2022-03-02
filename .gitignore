@@ -1,0 +1,10 @@
+.clangd/
+.ccls-cache/
+.cache/
+.vscode/
+.idea/
+.kdev4/
+build/
+compile_commands.json
+*.pth
+*.kdev4

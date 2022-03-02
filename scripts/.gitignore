@@ -1,0 +1,15 @@
+__pycache__/
+*.pth
+*.jpg
+*.png
+*.pth.tar
+*.avi
+*.mp4
+*.MP4
+*.MOV
+*.txt
+*.json
+*.zip
+*.pth.tar
+saved_images/
+datas/

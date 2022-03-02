@@ -1,0 +1,6 @@
+# time to call the smoke segmentation, in seconds
+float32 timeOut
+
+---
+bool result
+

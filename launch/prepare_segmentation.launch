@@ -1,0 +1,22 @@
+<!-- need the message first-->
+<launch>
+    <node pkg="forest_fire_detection_system"
+    type="HandleImageTransport"
+    name="handle_image_transport_node"
+    args=""
+    respawn="true"
+    output="screen">
+    <param name="image_transport"
+    value="compressed">
+    </param>
+    </node>
+
+    <node pkg="forest_fire_detection_system"
+    type="smoke_segmentator.py"
+    name="smoke_segmentator_node"
+    args=""
+    respawn="true"
+    output="screen">
+    </node>
+</launch>
+

@@ -1,0 +1,14 @@
+[submodule "3rdparty/torch2trt"]
+	path = 3rdparty/torch2trt
+	url = https://github.com/NVIDIA-AI-IOT/torch2trt
+	branch = master
+
+[submodule "3rdparty/dbg-macro"]
+	path = 3rdparty/dbg-macro
+	url = https://github.com/sharkdp/dbg-macro.git
+	branch = master
+
+[submodule "3rdparty/PX4-Matrix"]
+	path = 3rdparty/PX4-Matrix
+	url = https://github.com/PX4/PX4-Matrix.git
+	branch = master
