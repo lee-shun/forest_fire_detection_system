@@ -9,7 +9,7 @@ import numpy as np
 import sys
 import torchvision.transforms.functional as TF
 # insert at 1, 0 is the script path (or '' in REPL)
-sys.path.insert(0, 'forest_fire_detection_system/scripts/modules/common')
+sys.path.insert(0, 'forest_fire_detection_system/scripts/develop/semantic_segmentation_unet/common')
 
 from inout import Inputlayer, Outlayer
 from attentiongate import Attention_block
