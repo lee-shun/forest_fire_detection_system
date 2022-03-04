@@ -1,10 +1,6 @@
-from pickle import FALSE, TRUE
-import torch
-
 from tqdm import tqdm
-from tqdm import trange
-from time import sleep
 
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from lightunet import LightUnet
@@ -12,11 +8,10 @@ from lightutils import (
     save_model,
     save_entire_model,
     load_model,
-    seg_acc,
-    check_accuracy,
     save_predictions_as_imgs,
     save_plots,
 )
+from lightevaluate import Segratio
 import argparse
 
 # from albumentations.pytorch import ToTensorV2
@@ -40,7 +35,7 @@ parser.add_argument(
     '-e',
     '--epochs',
     type = int,
-    default = 5,
+    default = 50,
     help = 'Numbers of epochs to train the network'
 )
 parser.add_argument(
@@ -57,6 +52,15 @@ parser.add_argument(
     default = '/home/qiao/dev/giao/dataset/imgs/jinglingseg/masks',
     help = 'Input the mask dataset path'
 )
+# segmentation codes
+# classes add codes
+codes = ['Target', 'Void']
+num_classes = 2
+name2id = {v:k for k, v in enumerate(codes)}
+void_code = name2id['Void']
+metric = Segratio(num_classes)
+
+
 parser.add_argument(
     '-l',
     '--lr',
@@ -93,6 +97,8 @@ print(f'There are {total_params:,} total parameters in the model.\n')
 optimizer = optim.Adam(model.parameters(), lr = Learning_rate)
 # loss function for training
 loss_fn = nn.BCELoss()
+# loss_fn = nn.CrossEntropyLoss()
+
 # load dataset
 data = JinglingDataset(img_dir = Img_dir,mask_dir = Mask_dir, transform = transform)
 dataset_size = len(data)
@@ -115,12 +121,6 @@ val_loader = DataLoader(val_data, batch_size = Batch_size,
                         num_workers = Num_workers, 
                         pin_memory = Pin_memory,
                         shuffle = True)
-
-# def modeltrans(input, target):
-#     preds = model(input)n_epochs, n_steps = 5, 100
-#     if preds.shape != target.shape:
-#         preds = TF.resize(preds, size=target.shape[2:])
-#     return preds
 
 def fit(train_loader, model, optimizer, loss_fn, scaler):
     print('====> Fitting process')
@@ -146,28 +146,29 @@ def fit(train_loader, model, optimizer, loss_fn, scaler):
 
             loss = loss_fn(preds, mask)
             train_running_loss += loss.item()
-            train_running_acc += seg_acc(preds, mask).sum().item()
+
+
+            preds = preds.squeeze(1).permute(1, 2, 0)
+            mask = mask.squeeze(1).permute(1, 2, 0)
+            preds = (preds/255).detach().numpy().astype(np.uint8)
+            mask = mask.detach().numpy().astype(np.uint8)
+
+            # print('preds size:', preds.shape)
+            # print('masks size:', mask.shape)
+
+            hist = metric.addbatch(preds, mask)
+            acc = metric.get_acc()
+            train_running_acc += acc.item()
         # backward
         optimizer.zero_grad()
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update() 
 
-    n_epochs, n_steps = Num_epochs, len(train_data)
-    with trange(1, n_epochs + 1, desc="All epochs") as epochs:
-        for epoch in epochs:
-            with trange(1, n_steps + 1, desc="Epoch {}/{}".format(epoch, n_epochs)) as steps:
-                for step in steps:
-                    epochs.set_postfix(foo=epoch * n_steps + step)
-                    steps.set_postfix(loss=loss.item(), baz=1 / step)
-                    sleep(0.01)
-
-        # # update tqdm loop
-        # tqdm(enumerate(train_loader)).set_postfix(loss = loss.item())
-        # tqdm(enumerate(train_loader)).set_postfix(loss = loss.item())
+        tqdm(enumerate(train_loader)).set_postfix(loss = loss.item(), acc = acc.item())
 
     epoch_loss = train_running_loss / counter
-    epoch_acc = 100. * train_running_acc
+    epoch_acc = 100. * train_running_acc / counter
     return epoch_loss, epoch_acc
 
 def valid(val_loader, model, loss_fn):
@@ -191,31 +192,32 @@ def valid(val_loader, model, loss_fn):
             preds = model(img)
             if preds.shape != mask.shape:
                 preds = TF.resize(preds, size = mask.shape[2:])
-
+            
             val_loss = loss_fn(preds, mask)
             val_running_loss += val_loss.item()
-            val_running_acc += seg_acc(preds, mask).sum().item()
 
-    n_epochs, n_steps = Num_epochs, len(val_data)
-    with trange(1, n_epochs + 1, desc="All epochs") as epochs:
-        for epoch in epochs:
-            with trange(1, n_steps + 1, desc="Epoch {}/{}".format(epoch, n_epochs)) as steps:
-                for step in steps:
-                    epochs.set_postfix(foo=epoch * n_steps + step)
-                    steps.set_postfix(loss=val_loss.item(), baz=1 / step)
-                    sleep(0.01)
+            preds = preds.squeeze(1).permute(1, 2, 0)
+            mask = mask.squeeze(1).permute(1, 2, 0)
+            preds = (preds/255).detach().numpy().astype(np.uint8)
+            mask = mask.detach().numpy().astype(np.uint8)
 
-        # # update tqdm loop
-        # tqdm(enumerate(train_loader)).set_postfix(loss = val_loss.item())
+            # print('preds size:', preds.shape)
+            # print('masks size:', mask.shape)
+
+            hist = metric.addbatch(preds, mask)
+            val_acc = metric.get_acc()
+            val_running_acc += val_acc.item()
+
+        tqdm(enumerate(val_loader)).set_postfix(loss = val_loss.item(), acc = val_acc.item())
 
     val_epoch_loss = val_running_loss / counter
-    val_epoch_acc = 100. * val_running_acc
-    return val_epoch_loss, val_epoch_acc
+    val_epoch_acc = 100. * val_running_acc / counter
+    return val_epoch_loss, val_epoch_acc 
 
 def main():
     if Load_model is not None:
         pass
-        # load_model(torch.load('Lightuent18S_1e5_e18.pth'), model)
+        load_model(torch.load('Lightuent18S_1e5_e18.pth'), model)
 
     train_loss, val_loss = [], []
     train_acc, val_acc = [], []
@@ -224,13 +226,15 @@ def main():
     for epoch in range(Num_epochs):
         train_epoch_loss, train_epoch_acc = fit(train_loader, model,
                                                      optimizer, loss_fn, scaler)
+        # tqdm(enumerate(train_loader)).set_postfix(loss = train_epoch_loss(), acc = train_epoch_loss())
         val_epoch_loss, val_epoch_acc = valid(val_loader, model,loss_fn)
-
+        # tqdm(enumerate(val_loader)).set_postfix(loss = val_epoch_loss.item(), acc = val_epoch_loss())
         train_loss.append(train_epoch_loss)
         val_loss.append(val_epoch_loss)
         train_acc.append(train_epoch_acc)
         val_acc.append(val_epoch_acc)
 
+        
     # save entire model
     save_model(Num_epochs, model, optimizer, loss_fn)
     # check accuracy
