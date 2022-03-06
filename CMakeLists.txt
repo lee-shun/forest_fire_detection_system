@@ -12,9 +12,10 @@ find_package(
   roscpp
   rospy
   roslib
+  tf2
+  tf2_ros
   image_transport
   dji_osdk_ros
-  message_generation
   geometry_msgs
   message_generation
   nav_msgs
@@ -128,6 +129,8 @@ catkin_package(
   roscpp
   rospy
   roslib
+  tf2
+  tf2_ros
   std_msgs
   dji_osdk_ros
   geometry_msgs

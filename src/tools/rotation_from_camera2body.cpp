@@ -39,8 +39,24 @@ int main(int argc, char** argv) {
   std::cout << "camera:\n"
             << rotat_quatern_cb * vector_body << "\nbody\n"
             << vector_body.transpose() << std::endl;
-  std::cout << "rotat_quan_cb = \n" << rotat_quatern_cb.w()<< std::endl;
+
+  std::cout << "rotat_quan_cb.w.x.y.z = \n"
+            << rotat_quatern_cb.w() << std::endl
+            << rotat_quatern_cb.x() << std::endl
+            << rotat_quatern_cb.y() << std::endl
+            << rotat_quatern_cb.z() << std::endl;
+
   std::cout << "rotat_matrix_cb = \n" << rotat_quatern_cb.matrix() << std::endl;
+
+  // inverse
+  Eigen::Matrix3d rotat_matrix_bc = rotat_quatern_cb.matrix().inverse();
+  Eigen::Quaterniond rotat_quatern_bc(rotat_matrix_bc);
+
+  std::cout << "rotat_quan_bc.w.x.y.z = \n"
+            << rotat_quatern_bc.w() << std::endl
+            << rotat_quatern_bc.x() << std::endl
+            << rotat_quatern_bc.y() << std::endl
+            << rotat_quatern_bc.z() << std::endl;
 
   return 0;
 }
