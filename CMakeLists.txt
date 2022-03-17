@@ -37,8 +37,8 @@ link_directories(${cv_bridge_LIBRARY_DIRS})
 include_directories("/usr/include/eigen3")
 link_directories("~/catkin_ws/devel/lib")
 
-include_directories("./3rdparty/stereo_camera_vo/include")
-link_directories("./3rdparty/stereo_camera_vo/lib")
+include_directories("3rdparty")
+link_directories("3rdparty/stereo_camera_vo/lib")
 
 ## Step: use dji
 ADD_DEFINITIONS(-DUSE_OPEN_CV_CONTRIB)
