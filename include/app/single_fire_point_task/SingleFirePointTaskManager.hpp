@@ -17,6 +17,9 @@
 #ifndef INCLUDE_APP_SINGLE_FIRE_POINT_TASK_SINGLEFIREPOINTTASKMANAGER_HPP_
 #define INCLUDE_APP_SINGLE_FIRE_POINT_TASK_SINGLEFIREPOINTTASKMANAGER_HPP_
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/SubscribeWaypointV2Event.h>
@@ -32,7 +35,6 @@
 #include <tools/PrintControl/PrintCtrlMacro.h>
 #include <tools/PositionHelper.hpp>
 
-#include <PX4-Matrix/matrix/Euler.hpp>
 #include <modules/GimbalCameraOperator/GimbalCameraOperator.hpp>
 #include <modules/PathPlanner/ZigzagPathPlanner.hpp>
 #include <modules/WayPointOperator/WpV2Operator.hpp>
@@ -84,7 +86,7 @@ class SingleFirePointTaskManager {
 
   void readPathParams();
   sensor_msgs::NavSatFix getHomeGPosAverage(int times);
-  matrix::Eulerf getInitAttAverage(int times);
+  Eigen::Vector3d getInitAttAverage(int times);
   void initMission(
       dji_osdk_ros::InitWaypointV2Setting *initWaypointV2SettingPtr);
 
