@@ -18,7 +18,7 @@
 #define INCLUDE_MODULES_POSECALCULATOR_POSECALCULATOR_HPP_
 
 
-#include ""
+#include "stereo_camera_vo/module/frontend.h"
 
 namespace FFDS {
 namespace MODULES {
