@@ -12,3 +12,6 @@
 	path = 3rdparty/PX4-Matrix
 	url = https://github.com/PX4/PX4-Matrix.git
 	branch = master
+[submodule "3rdparty/stereo_camera_vo"]
+	path = 3rdparty/stereo_camera_vo
+	url = https://github.com/lee-shun/stereo_camera_vo.git
