@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
 
   while (ros::ok()) {
     ros::spinOnce();
+    stereo_cam_operator.UpdateOnce();
     pt_cloud = stereo_cam_operator.GetRosPtCloudOnce();
     pt_pub.publish(pt_cloud);
     PRINT_ENTRY("publish!");
