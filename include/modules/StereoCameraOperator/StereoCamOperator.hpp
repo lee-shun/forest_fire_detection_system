@@ -54,7 +54,7 @@ class StereoCamOperator {
     return ros_pt_cloud_;
   }
   const cv::Mat &GetRectLeftImgOnce() const { return img_rect_left_; }
-  const cv::Mat &GetRectRightImgImgOnce() const { return img_rect_right_; }
+  const cv::Mat &GetRectRightImgOnce() const { return img_rect_right_; }
   const geometry_msgs::QuaternionStamped &GetAttOnce() const { return att_; }
 
   // catch ctrl+c to stop the vga subscription...
