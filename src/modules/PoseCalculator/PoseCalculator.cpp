@@ -101,4 +101,7 @@ void FFDS::MODULES::PoseCalculator::Step() {
   new_frame->right_img_ = stereo_cam_operator->GetRectRightImgOnce();
 
   frontend_->AddFrame(new_frame);
+
+  std::cout << "pose after: \n"
+            << new_frame->Pose().matrix().inverse() << std::endl;
 }

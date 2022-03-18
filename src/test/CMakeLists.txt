@@ -20,7 +20,6 @@ foreach(EACH_SRC ${SRC_LIST})
 
   string(REGEX REPLACE ".+/(.+)\\..*" "\\1" EACH_EXE ${EACH_SRC})
 
-  message("EACH_EXE:" ${EACH_EXE})
   # generate the library
   add_executable(${EACH_EXE} ${EACH_SRC})
   target_link_libraries(
