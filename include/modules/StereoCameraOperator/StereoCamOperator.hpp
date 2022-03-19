@@ -78,12 +78,12 @@ class StereoCamOperator {
   message_filters::Subscriber<sensor_msgs::Image> img_right_sub_;
   message_filters::Subscriber<geometry_msgs::QuaternionStamped> attitude_sub_;
 
-  // typedef message_filters::sync_policies::ApproximateTime<
-  //     sensor_msgs::Image, sensor_msgs::Image, geometry_msgs::QuaternionStamped>
-  //     ImgsAttSyncPloicy;
-  typedef message_filters::sync_policies::ExactTime<
+  typedef message_filters::sync_policies::ApproximateTime<
       sensor_msgs::Image, sensor_msgs::Image, geometry_msgs::QuaternionStamped>
       ImgsAttSyncPloicy;
+  // typedef message_filters::sync_policies::ExactTime<
+  //     sensor_msgs::Image, sensor_msgs::Image, geometry_msgs::QuaternionStamped>
+  //     ImgsAttSyncPloicy;
 
   std::shared_ptr<message_filters::Synchronizer<ImgsAttSyncPloicy>>
       imgs_att_synchronizer_{nullptr};
