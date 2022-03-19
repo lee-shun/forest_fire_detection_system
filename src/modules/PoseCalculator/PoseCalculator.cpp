@@ -21,6 +21,7 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
    * */
   const std::string package_path =
       ros::package::getPath("forest_fire_detection_system");
+
   const std::string m300_stereo_config_path =
       package_path + "/config/m300_front_stereo_param.yaml";
   stereo_cam_operator = std::make_shared<FFDS::MODULES::StereoCamOperator>(
@@ -61,8 +62,12 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   /**
    * Step: 3 create the frontend instance
    * */
+  const std::string stereo_vo_config_path =
+      package_path + "/config/stereo_vo_config.yaml";
   frontend_ = std::make_shared<stereo_camera_vo::module::Frontend>(
-      camera_left_, camera_right_, true);
+      camera_left_, camera_right_, true, stereo_vo_config_path);
+  PRINT_INFO("get stereo_vo_config params from %s",
+             stereo_vo_config_path.c_str());
 }
 
 Sophus::SE3d FFDS::MODULES::PoseCalculator::Twb2Twc(
