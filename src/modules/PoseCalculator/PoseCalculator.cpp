@@ -47,7 +47,7 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   double fy = param_proj_left.at<double>(1, 1);
   double principal_x = param_proj_left.at<double>(0, 2);
   double principal_y = param_proj_left.at<double>(1, 2);
-  double baseline_x_fx = -param_proj_right.at<double>(0, 3);
+  double baseline_x_fx = param_proj_right.at<double>(0, 3);
   double baseline = baseline_x_fx / fx;
 
   camera_left_ = std::make_shared<stereo_camera_vo::common::Camera>(
