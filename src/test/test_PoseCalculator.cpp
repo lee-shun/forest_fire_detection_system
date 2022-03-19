@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
 
   while (ros::ok()) {
     pose_calculator.Step();
-    ros::Duration(1.0).sleep();
   }
 return 0;
 }
