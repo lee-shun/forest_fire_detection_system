@@ -61,10 +61,10 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
                            1);
   attitude_sub_.subscribe(nh_, "dji_osdk_ros/attitude", 1);
 
-  imgs_att_synchronizer_ = std::make_shared<
-      message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image,
-                                        geometry_msgs::QuaternionStamped>>(
-      img_left_sub_, img_right_sub_, attitude_sub_, 1);
+  imgs_att_synchronizer_ =
+      std::make_shared<message_filters::Synchronizer<ImgsAttSyncPloicy>>(
+          ImgsAttSyncPloicy(1), img_left_sub_, img_right_sub_, attitude_sub_);
+
   imgs_att_synchronizer_->registerCallback(boost::bind(
       &StereoCamOperator::StereoImgAttPtCloudCallback, this, _1, _2, _3));
 }
