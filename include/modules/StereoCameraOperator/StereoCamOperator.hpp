@@ -50,12 +50,12 @@ class StereoCamOperator {
 
   void UpdateOnce() { ros::spinOnce(); }
 
-  const sensor_msgs::PointCloud2 &GetRosPtCloudOnce() const {
+  const sensor_msgs::PointCloud2& GetRosPtCloudOnce() const {
     return ros_pt_cloud_;
   }
-  const cv::Mat &GetRectLeftImgOnce() const { return img_rect_left_; }
-  const cv::Mat &GetRectRightImgOnce() const { return img_rect_right_; }
-  const geometry_msgs::QuaternionStamped &GetAttOnce() const { return att_; }
+  const cv::Mat& GetRectLeftImgOnce() const { return img_rect_left_; }
+  const cv::Mat& GetRectRightImgOnce() const { return img_rect_right_; }
+  const geometry_msgs::QuaternionStamped& GetAttOnce() const { return att_; }
 
   // catch ctrl+c to stop the vga subscription...
   static void ShutDownHandler(int sig_num);
@@ -83,9 +83,9 @@ class StereoCamOperator {
       imgs_att_synchronizer_{nullptr};
 
   void StereoImgAttPtCloudCallback(
-      const sensor_msgs::ImageConstPtr &img_left,
-      const sensor_msgs::ImageConstPtr &img_right,
-      const geometry_msgs::QuaternionStampedConstPtr &att);
+      const sensor_msgs::ImageConstPtr& img_left,
+      const sensor_msgs::ImageConstPtr& img_right,
+      const geometry_msgs::QuaternionStampedConstPtr& att);
 };
 }  // namespace MODULES
 }  // namespace FFDS

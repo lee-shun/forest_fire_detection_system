@@ -73,7 +73,6 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
     const sensor_msgs::ImageConstPtr &img_left,
     const sensor_msgs::ImageConstPtr &img_right,
     const geometry_msgs::QuaternionStampedConstPtr &att) {
-
   // copy to dji_osdk_ros
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
   memcpy(&img_VGA_img.img_vec[0], &img_left->data[0],
@@ -94,7 +93,6 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
   img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
   ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
 }
-
 
 // handle ctrl+c shutdown stop the vga...
 void FFDS::MODULES::StereoCamOperator::ShutDownHandler(int sig_num) {
