@@ -91,6 +91,7 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
   stereo_frame_ptr_->filterDisparityMap();
   stereo_frame_ptr_->unprojectROSPtCloud();
 
+  PRINT_ENTRY("call back!");
   att_ = *att;
   img_rect_left_ = stereo_frame_ptr_->getRectLeftImg();
   img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
