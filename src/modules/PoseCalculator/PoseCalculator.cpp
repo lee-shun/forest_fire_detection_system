@@ -93,7 +93,17 @@ Sophus::SE3d FFDS::MODULES::PoseCalculator::Twb2Twc(
 
 void FFDS::MODULES::PoseCalculator::Step() {
   stereo_cam_operator->UpdateOnce();
+
+  cv::Mat left_img = stereo_cam_operator->GetRectLeftImgOnce();
+  cv::Mat right_img = stereo_cam_operator->GetRectRightImgOnce();
+  if (left_img.empty() || right_img.empty()) {
+    PRINT_WARN("no valid stereo images right now!");
+    return;
+  }
+
   auto new_frame = stereo_camera_vo::common::Frame::CreateFrame();
+  new_frame->left_img_ = left_img;
+  new_frame->right_img_ = right_img;
 
   geometry_msgs::QuaternionStamped att_body_ros =
       stereo_cam_operator->GetAttOnce();
@@ -102,11 +112,7 @@ void FFDS::MODULES::PoseCalculator::Step() {
   Sophus::SE3d init_pose = Twb2Twc(att_body_ros, Eigen::Vector3d::Zero());
 
   new_frame->SetPose(init_pose);
-  new_frame->left_img_ = stereo_cam_operator->GetRectLeftImgOnce();
-  new_frame->right_img_ = stereo_cam_operator->GetRectRightImgOnce();
-
   frontend_->AddFrame(new_frame);
-
   std::cout << "pose after: \n"
             << new_frame->Pose().matrix().inverse() << std::endl;
 }
