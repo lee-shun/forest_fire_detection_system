@@ -111,7 +111,7 @@ void FFDS::MODULES::PoseCalculator::Step() {
   // leave the translation to be calculated by VO
   Sophus::SE3d init_pose = Twb2Twc(att_body_ros, Eigen::Vector3d::Zero());
 
-  new_frame->SetPose(init_pose);
+  // new_frame->SetPose(init_pose);
   frontend_->AddFrame(new_frame);
   std::cout << "pose after: \n"
             << new_frame->Pose().matrix().inverse() << std::endl;
