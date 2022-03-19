@@ -47,13 +47,14 @@ int main(int argc, char** argv) {
 
     cv::Mat img_left = stereo_cam_operator.GetRectLeftImgOnce();
     cv::Mat img_right = stereo_cam_operator.GetRectRightImgOnce();
-
-    cv::imshow("left_rect", img_left);
-    cv::imshow("right_rect", img_right);
-    cv::waitKey(1);
+    if (!img_left.empty() && !img_left.empty()) {
+      cv::imshow("left_rect", img_left);
+      cv::imshow("right_rect", img_right);
+      cv::waitKey(1);
+    }
 
     geometry_msgs::QuaternionStamped att = stereo_cam_operator.GetAttOnce();
-    std::cout <<" att.quaternion = \n"<< att.quaternion << std::endl;
+    std::cout << " att.quaternion = \n" << att.quaternion << std::endl;
 
     pt_cloud = stereo_cam_operator.GetRosPtCloudOnce();
     pt_pub.publish(pt_cloud);
