@@ -63,10 +63,13 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
 
   imgs_att_synchronizer_ =
       std::make_shared<message_filters::Synchronizer<ImgsAttSyncPloicy>>(
-          ImgsAttSyncPloicy(1), img_left_sub_, img_right_sub_, attitude_sub_);
+          ImgsAttSyncPloicy(10), img_left_sub_, img_right_sub_, attitude_sub_);
 
   imgs_att_synchronizer_->registerCallback(boost::bind(
       &StereoCamOperator::StereoImgAttPtCloudCallback, this, _1, _2, _3));
+
+  ros::Duration(1.0).sleep();
+  PRINT_INFO("Create StereoCamOperator done!");
 }
 
 void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
