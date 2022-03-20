@@ -4,4 +4,4 @@
 	branch = master
 [submodule "3rdparty/stereo_camera_vo"]
 	path = 3rdparty/stereo_camera_vo
-	url = https://github.com/lee-shun/stereo_camera_vo.git
+	url = git@github.com:lee-shun/stereo_camera_vo.git
