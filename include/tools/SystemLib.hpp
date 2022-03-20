@@ -22,7 +22,6 @@
 #include <tools/PrintControl/PrintCtrlMacro.h>
 #include <yaml-cpp/yaml.h>
 #include <dirent.h>
-#include <sys/io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
