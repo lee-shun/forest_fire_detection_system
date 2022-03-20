@@ -26,10 +26,19 @@ int main(int argc, char** argv) {
   const std::string homedir = getenv("HOME");
   const std::string m300_stereo_data_path = homedir + "/m300_data";
 
+  // clear path and create new
+  FFDS::TOOLS::shellRm(m300_stereo_data_path);
+  FFDS::TOOLS::shellMkdir(m300_stereo_data_path);
+
   const std::string left_img_path = m300_stereo_data_path + "/image_0";
   const std::string right_img_path = m300_stereo_data_path + "/image_1";
 
-  const std::string att_file_path = m300_stereo_data_path + "/pose.txt";
+  // clear path and create new
+  FFDS::TOOLS::shellRm(left_img_path);
+  FFDS::TOOLS::shellRm(right_img_path);
+  FFDS::TOOLS::shellMkdir(left_img_path);
+  FFDS::TOOLS::shellMkdir(right_img_path);
+
 
   /* Step: 2 create operator */
   const std::string package_path =
@@ -44,7 +53,9 @@ int main(int argc, char** argv) {
   signal(SIGINT, FFDS::MODULES::StereoCamOperator::ShutDownHandler);
 
 
+  const std::string att_file_path = m300_stereo_data_path + "/pose.txt";
   FFDS::TOOLS::FileWritter att_file_writter(att_file_path, 8);
+  // clear and new
   att_file_writter.new_open();
   uint32_t img_index = 1;
 
