@@ -39,7 +39,6 @@ int main(int argc, char** argv) {
   FFDS::TOOLS::shellMkdir(left_img_path);
   FFDS::TOOLS::shellMkdir(right_img_path);
 
-
   /* Step: 2 create operator */
   const std::string package_path =
       ros::package::getPath("forest_fire_detection_system");
@@ -51,7 +50,6 @@ int main(int argc, char** argv) {
           m300_stereo_config_path);
   // regist the shutDownHandler
   signal(SIGINT, FFDS::MODULES::StereoCamOperator::ShutDownHandler);
-
 
   const std::string att_file_path = m300_stereo_data_path + "/pose.txt";
   FFDS::TOOLS::FileWritter att_file_writter(att_file_path, 8);
@@ -69,6 +67,11 @@ int main(int argc, char** argv) {
       PRINT_WARN("no valid stereo images right now!");
       continue;
     }
+
+    if (1 == img_index) {
+      PRINT_INFO("start saving dataset ...");
+    }
+
     geometry_msgs::QuaternionStamped att_body_ros =
         stereo_cam_operator->GetAttOnce();
 
