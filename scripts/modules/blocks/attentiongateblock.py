@@ -26,7 +26,7 @@ class Attention_block(nn.Module):
         xl = self.theta(x)
         _, _, H, W = xl.size()
         
-        gl = F.upsample(self.phi(g), size = (H, W), mode = 'bilinear')
+        gl = F.interpolate(self.phi(g), size = (H, W), mode = 'bilinear')
         # gl = self.phi(g)
         gl_size = gl.size()
 
