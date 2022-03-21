@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.activation import ReLU
 
+Device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # input conv
 class Inputlayer(nn.Module):
@@ -24,15 +25,16 @@ class Outlayer(nn.Module):
         # 1x1 Conv
         self.convf = nn.ConvTranspose2d(in_channels, out_channels, 1, 1, 0)
         self.relu = nn.ReLU()
-        self.outscale = nn.Upsample(scale_factor=2)
-        self.convo = nn.ConvTranspose2d(in_channels, out_channels, 7, 2, 3)
+        self.outscale = nn.UpsamplingNearest2d(scale_factor=2)
+        self.convo = nn.ConvTranspose2d(out_channels, out_channels, 7, 2, 3)
         self.sigmoid = nn.Sigmoid()
+        
     def forward(self, x):
         y = self.convf(x)
         y = self.relu(y)
-        y = self.outscale(x)
+        y = self.outscale(y)
         y = self.convo(y)
-        y = self.sigmoid(y)
+        
         return y
 
 if __name__ == "__main__":
@@ -40,4 +42,5 @@ if __name__ == "__main__":
     layer2 = Outlayer(in_channels=64, out_channels=1)
     feature_in = torch.randn((4, 64, 99, 99))
     feature_out = layer2(feature_in)
-    print(feature_out.shape)
+    print(feature_out)
+    print(feature_out.size())

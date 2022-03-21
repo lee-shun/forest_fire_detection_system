@@ -3,9 +3,9 @@ import torch.nn as nn
 from torch.nn.modules.activation import ReLU
 from torch.nn.modules.batchnorm import BatchNorm2d
 
-class Block(nn.Module):
+class DBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(Block, self).__init__()
+        super(DBlock, self).__init__()
         self.block = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 3, 1, 1),
             nn.BatchNorm2d(out_channels),
@@ -18,9 +18,9 @@ class Block(nn.Module):
     def forward(self, x):
         return self.block(x)
 
-class TBlock(nn.Module):
+class UBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(TBlock, self).__init__()
+        super(UBlock, self).__init__()
         self.tblock = nn.Sequential(
             nn.ConvTranspose2d(in_channels, out_channels, 3, 1, 1),
             nn.BatchNorm2d(out_channels),
@@ -47,9 +47,9 @@ class Up_conv(nn.Module):
         return self.upconv(x)
 
 if __name__ == '__main__':
-    layer1 = Block(in_channels=3, out_channels=64)
-    layer2 = TBlock(in_channels=128, out_channels=64)
+    layer1 = DBlock(in_channels=3, out_channels=64)
+    layer2 = UBlock(in_channels=128, out_channels=64)
     layer3 = Up_conv(in_channels=256, out_channels=1)
     feature_in = torch.randn((4, 256, 255, 255))
     feature_out = layer3(feature_in)
-    print(feature_out.shape)
+    print('feature out size:', feature_out.shape)

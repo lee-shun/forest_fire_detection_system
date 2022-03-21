@@ -1,3 +1,4 @@
+import sklearn
 import torch
 import torchvision
 import matplotlib
@@ -5,11 +6,16 @@ import matplotlib.pyplot as plt
 matplotlib.style.use('ggplot')
 
 import os
-root = os.path.dirname(os.path.join('/home/qiao/dev/giao/havingfun/detection/segmentation/saved_imgs/'))
+root = os.path.dirname(os.path.join(
+    'havingfun/detection/segmentation/saved_imgs/'
+    ))
 
-modelname = 'Lightunet18'
+import numpy as np
+import sklearn.metrics as metrics
+
+modelname = 'Lightunet18_MSE_Adam'
 lr = '1e4'
-epochs = 'e5'
+epochs = 'e30'
 process_model_param = 'process_' + modelname + '_' + lr + '_' + epochs + '.pth'
 model_param = modelname + '_' + lr + '_' + epochs + '.pth'
 loss_imgs = 'Loss_'+ modelname + '_' + lr + '_' + epochs +'.png'
@@ -43,34 +49,7 @@ codes = ['Target', 'Void']
 num_classes = 2
 name2id = {v:k for k, v in enumerate(codes)}
 void_code = name2id['Void']
-
-def seg_acc(input, target):
-    target = target.squeeze(1)
-    mask = target != void_code
-    return (input.argmax(dim = 1)[mask]==target[mask]).float().mean()
-
-def check_accuracy(loader, model, device = 'cuda'):
-    num_correct = 0
-    num_pixels = 0
-    dice_score = 0
-    model.eval()
-
-    with torch.no_grad():
-        for x, y in loader:
-            x = x.to(device)
-            y = y.to(device).unsqueeze(1)
-            preds = torch.sigmoid(model(x))
-            preds = (preds > 0.5).float()
-            num_correct += (preds == y).sum()
-            num_pixels += torch.numel(preds)
-            dice_score += (2*(preds * y).sum())/(
-                (preds + y).sum() + 1e-8
-            )
-
-    print(f'Got {num_correct}/{num_pixels} with acc: {num_correct/num_correct * 100:.2f}')
-    print(f'Got dice score of: {dice_score/len(loader)}')
-    model.train()
-
+       
 def save_predictions_as_imgs(loader, model, folder = root, device = 'cuda'):
     print('===========> saving prediction')
     for idx, (x, y) in enumerate(loader):
@@ -79,9 +58,11 @@ def save_predictions_as_imgs(loader, model, folder = root, device = 'cuda'):
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
         torchvision.utils.save_image(
-            preds, f'{folder}/pred_{idx}.png'
+            preds, 
+            os.path.join(root, 'seg_result.png'),
         )
-        torchvision.utils.save_image(y.unsqueeze(1), f'{folder}{idx}.png')
+        torchvision.utils.save_image(
+            y.unsqueeze(1), f'{folder}{idx}.png')
 
     model.train()
 
@@ -112,19 +93,18 @@ def save_plots(train_acc, val_acc, train_loss, val_loss):
     
     plt.savefig(os.path.join(root, loss_imgs))
 
-def plot_img_and_mask(img, mask):
-    classes = mask.shape[0] if len(mask.shape) > 2 else 1
-    fig, ax = plt.subplots(1, classes +1)
+def plot_img_and_mask(img, pred, mask):
+    print('=====> Saving prediction result')
+    fig, ax = plt.subplots(1, 3)
     ax[0].set_title('Input image')
     ax[0].imshow(img)
-    if classes > 1:
-        for i in range(classes):
-            ax[i + 1].set_title(f'Ouput mask (class {i + 1})')
-            ax[i + 1].imshow(mask[:, :, i])
-    else:
-        ax[1].set_title(f'Output mask')
-        ax[1].imshow(mask)
+    ax[1].set_title(f'Output prediction')
+    ax[1].imshow(pred)
+    ax[2].set_title('Target mask')
+    ax[2].imshow(mask)
+    plt.grid = False 
     plt.xticks([]), plt.yticks([])
+    plt.show()
     plt.savefig(os.path.join(root, show_imgs))
 
 # if __name__ == '__main__':
