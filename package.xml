@@ -53,6 +53,8 @@
     <build_depend>roscpp</build_depend>
     <build_depend>rospy</build_depend>
     <build_depend>roslib</build_depend>
+    <build_depend>tf2</build_depend>
+    <build_depend>tf2_ros</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>dji_osdk_ros</build_depend>
     <build_depend>message_generation</build_depend>
@@ -65,6 +67,8 @@
 
     <build_export_depend>roscpp</build_export_depend>
     <build_export_depend>rospy</build_export_depend>
+    <build_export_depend>tf2</build_export_depend>
+    <build_export_depend>tf2_ros</build_export_depend>
     <build_export_depend>roslib</build_export_depend>
     <build_export_depend>std_msgs</build_export_depend>
     <build_export_depend>dji_osdk_ros</build_export_depend>

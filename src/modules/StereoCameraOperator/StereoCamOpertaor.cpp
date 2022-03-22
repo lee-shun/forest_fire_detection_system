@@ -59,17 +59,24 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
   img_left_sub_.subscribe(nh_, "dji_osdk_ros/stereo_vga_front_left_images", 1);
   img_right_sub_.subscribe(nh_, "dji_osdk_ros/stereo_vga_front_right_images",
                            1);
-  topic_synchronizer_ =
-      new message_filters::TimeSynchronizer<sensor_msgs::Image,
-                                            sensor_msgs::Image>(
-          img_left_sub_, img_right_sub_, 10);
-  topic_synchronizer_->registerCallback(
-      boost::bind(&StereoCamOperator::StereoPtCloudCallback, this, _1, _2));
+  attitude_sub_.subscribe(nh_, "dji_osdk_ros/attitude", 1);
+
+  imgs_att_synchronizer_ =
+      std::make_shared<message_filters::Synchronizer<ImgsAttSyncPloicy>>(
+          ImgsAttSyncPloicy(10), img_left_sub_, img_right_sub_, attitude_sub_);
+
+  imgs_att_synchronizer_->registerCallback(boost::bind(
+      &StereoCamOperator::StereoImgAttPtCloudCallback, this, _1, _2, _3));
+
+  ros::Duration(1.0).sleep();
+  PRINT_INFO("Create StereoCamOperator done!");
 }
 
-void FFDS::MODULES::StereoCamOperator::StereoPtCloudCallback(
+void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
     const sensor_msgs::ImageConstPtr &img_left,
-    const sensor_msgs::ImageConstPtr &img_right) {
+    const sensor_msgs::ImageConstPtr &img_right,
+    const geometry_msgs::QuaternionStampedConstPtr &att) {
+  // copy to dji_osdk_ros
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
   memcpy(&img_VGA_img.img_vec[0], &img_left->data[0],
          sizeof(char) * M210_STEREO::VGA_HEIGHT * M210_STEREO::VGA_WIDTH);
@@ -84,13 +91,10 @@ void FFDS::MODULES::StereoCamOperator::StereoPtCloudCallback(
   stereo_frame_ptr_->filterDisparityMap();
   stereo_frame_ptr_->unprojectROSPtCloud();
 
+  att_ = *att;
+  img_rect_left_ = stereo_frame_ptr_->getRectLeftImg();
+  img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
   ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
-}
-
-const sensor_msgs::PointCloud2 &
-FFDS::MODULES::StereoCamOperator::GetRosPtCloudOnce() const {
-  ros::spinOnce();
-  return ros_pt_cloud_;
 }
 
 // handle ctrl+c shutdown stop the vga...

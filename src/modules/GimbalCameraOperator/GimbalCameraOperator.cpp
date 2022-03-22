@@ -37,16 +37,16 @@ void FFDS::MODULES::GimbalCameraOperator::setGimbalActionDefault() {
   gimbalAction.request.time = 1.0;
 }
 
-matrix::Vector3f FFDS::MODULES::GimbalCameraOperator::camera2NED(
-    const matrix::Vector3f& d_attInCamera) {
+Eigen::Vector3f FFDS::MODULES::GimbalCameraOperator::camera2NED(
+    const Eigen::Vector3f& d_attInCamera) {
   float phi = TOOLS::Deg2Rad(gimbalAtt.vector.x);   /* roll angle */
   float theta = TOOLS::Deg2Rad(gimbalAtt.vector.y); /* pitch angle */
 
-  float convert[3][3] = {{1, sin(phi) * tan(theta), cos(phi) * tan(theta)},
-                         {0, cos(phi), -sin(phi)},
-                         {0, sin(phi) / cos(theta), cos(phi) / cos(theta)}};
+  float convert[9] = {
+      1, sin(phi) * tan(theta), cos(phi) * tan(theta), 0, cos(phi), -sin(phi),
+      0, sin(phi) / cos(theta), cos(phi) / cos(theta)};
 
-  matrix::Matrix3f eularMatrix(convert);
+  Eigen::Matrix3f eularMatrix(convert);
 
   return eularMatrix * d_attInCamera;
 }
@@ -140,7 +140,7 @@ bool FFDS::MODULES::GimbalCameraOperator::ctrlRotateGimbal(
 
       /* WARN: the gimbal x is pitch, y is roll, z is yaw, it's left hand
        * WARN: rule??? YOU GOT BE KIDDING ME! */
-      matrix::Vector3f d_attCam(d_pitchCam, 0.0f, d_yawCam);
+      Eigen::Vector3f d_attCam(d_pitchCam, 0.0f, d_yawCam);
 
       setGimbalActionDefault();
       gimbalAction.request.is_reset = false;

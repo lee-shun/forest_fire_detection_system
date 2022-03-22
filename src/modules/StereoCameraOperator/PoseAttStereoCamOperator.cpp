@@ -116,6 +116,7 @@ void FFDS::MODULES::PoseAttStereoCamOperator::SyncDepthPoseAttCallback(
   depth_pose_att_.rotation.z() = att_msg->quaternion.z;
 
   depth_pose_att_.pt_cloud = CalPtCloud(left_img_msg, right_img_msg);
+  depth_pose_att_.pt_cloud.header.frame_id = "front_stereo_camera";
 }
 
 sensor_msgs::PointCloud2 FFDS::MODULES::PoseAttStereoCamOperator::CalPtCloud(

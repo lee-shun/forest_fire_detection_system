@@ -132,7 +132,7 @@ FFDS::APP::SingleFirePointTaskManager::getHomeGPosAverage(int times) {
   return posHelper.getAverageGPS(times);
 }
 
-matrix::Eulerf FFDS::APP::SingleFirePointTaskManager::getInitAttAverage(
+Eigen::Vector3d FFDS::APP::SingleFirePointTaskManager::getInitAttAverage(
     int times) {
   /* NOTE: the quaternion from dji_osdk_ros to Eular angle is ENU! */
   /* NOTE: but the FlightTaskControl smaple node is NEU. Why they do this! :( */
@@ -151,28 +151,25 @@ matrix::Eulerf FFDS::APP::SingleFirePointTaskManager::getInitAttAverage(
   quat.quaternion.y = quat.quaternion.y / times;
   quat.quaternion.z = quat.quaternion.z / times;
 
-  matrix::Quaternionf average_quat(quat.quaternion.w, quat.quaternion.x,
-                                   quat.quaternion.y, quat.quaternion.z);
+  Eigen::Quaterniond average_quat(quat.quaternion.w, quat.quaternion.x,
+                                  quat.quaternion.y, quat.quaternion.z);
 
-  return matrix::Eulerf(average_quat);
+  return average_quat.matrix().eulerAngles(2, 1, 0);
 }
 
 void FFDS::APP::SingleFirePointTaskManager::initMission(
     dji_osdk_ros::InitWaypointV2Setting *initWaypointV2SettingPtr) {
   sensor_msgs::NavSatFix homeGPos = getHomeGPosAverage(100);
-  PRINT_DEBUG("--------------------- Home Gpos ---------------------")
+  PRINT_DEBUG("--------------------- Home Gpos ---------------------");
   PRINT_DEBUG("latitude: %f deg", homeGPos.latitude);
   PRINT_DEBUG("longitude: %f deg", homeGPos.longitude);
   PRINT_DEBUG("altitude: %f deg", homeGPos.altitude);
 
-  matrix::Eulerf initAtt = getInitAttAverage(100);
-  PRINT_DEBUG("--------------------- Init ENU Attitude ---------------------")
-  PRINT_DEBUG("roll angle phi in ENU frame is: %f",
-              TOOLS::Rad2Deg(initAtt.phi()));
-  PRINT_DEBUG("pitch angle theta in ENU frame is: %f",
-              TOOLS::Rad2Deg(initAtt.theta()));
-  PRINT_DEBUG("yaw angle psi in ENU frame is: %f",
-              TOOLS::Rad2Deg(initAtt.psi()));
+  Eigen::Vector3d initAtt = getInitAttAverage(100);
+  PRINT_DEBUG("--------------------- Init ENU Attitude ---------------------");
+  PRINT_DEBUG("roll angle in ENU frame is: %f", TOOLS::Rad2Deg(initAtt(0)));
+  PRINT_DEBUG("pitch angle in ENU frame is: %f", TOOLS::Rad2Deg(initAtt(1)));
+  PRINT_DEBUG("yaw angle in ENU frame is: %f", TOOLS::Rad2Deg(initAtt(2)));
 
   /**
    * read the zigzag path shape parameters from yaml
@@ -193,9 +190,9 @@ void FFDS::APP::SingleFirePointTaskManager::initMission(
    * */
   MODULES::ZigzagPathPlanner pathPlanner(homeGPos, num, len, wid, height);
   std::vector<dji_osdk_ros::WaypointV2> WpV2Vec =
-      pathPlanner.getWpV2Vec(true, initAtt.psi());
+      pathPlanner.getWpV2Vec(true, initAtt(2));
   std::vector<COMMON::LocalPosition<double>> LocalPosVec =
-      pathPlanner.getLocalPosVec(true, initAtt.psi());
+      pathPlanner.getLocalPosVec(true, initAtt(2));
 
   TOOLS::FileWritter GPSplanWriter("m300_ref_GPS_path.csv", 8);
   TOOLS::FileWritter LocalplanWriter("m300_ref_Local_path.csv", 8);

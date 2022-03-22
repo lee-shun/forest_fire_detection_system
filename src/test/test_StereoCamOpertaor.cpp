@@ -38,13 +38,24 @@ int main(int argc, char** argv) {
   // regist the shutDownHandler
   signal(SIGINT, FFDS::MODULES::StereoCamOperator::ShutDownHandler);
 
-
   ros::Publisher pt_pub =
       nh.advertise<sensor_msgs::PointCloud2>("/point_cloud/output", 10);
   sensor_msgs::PointCloud2 pt_cloud;
 
   while (ros::ok()) {
-    ros::spinOnce();
+    stereo_cam_operator.UpdateOnce();
+
+    cv::Mat img_left = stereo_cam_operator.GetRectLeftImgOnce();
+    cv::Mat img_right = stereo_cam_operator.GetRectRightImgOnce();
+    if (!img_left.empty() && !img_left.empty()) {
+      cv::imshow("left_rect", img_left);
+      cv::imshow("right_rect", img_right);
+      cv::waitKey(1);
+    }
+
+    geometry_msgs::QuaternionStamped att = stereo_cam_operator.GetAttOnce();
+    std::cout << " att.quaternion = \n" << att.quaternion << std::endl;
+
     pt_cloud = stereo_cam_operator.GetRosPtCloudOnce();
     pt_pub.publish(pt_cloud);
     PRINT_ENTRY("publish!");
