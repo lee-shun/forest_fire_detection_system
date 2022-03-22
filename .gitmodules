@@ -5,6 +5,3 @@
 [submodule "3rdparty/stereo_camera_vo"]
 	path = 3rdparty/stereo_camera_vo
 	url = git@github.com:lee-shun/stereo_camera_vo.git
-[submodule "3rdparty/3rdparty/stereo_camera_vo"]
-	path = 3rdparty/3rdparty/stereo_camera_vo
-	url = git@github.com:lee-shun/stereo_camera_vo.git
