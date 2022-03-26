@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
   FFDS::MODULES::PoseCalculator pose_calculator;
 
   while (ros::ok()) {
-    pose_calculator.Step();
+    // pose_calculator.Step();
   }
 return 0;
 }

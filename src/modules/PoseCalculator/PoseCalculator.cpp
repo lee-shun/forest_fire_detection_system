@@ -14,6 +14,7 @@
  *******************************************************************************/
 
 #include "modules/PoseCalculator/PoseCalculator.hpp"
+#include "stereo_camera_vo/tool/system_lib.h"
 
 FFDS::MODULES::PoseCalculator::PoseCalculator() {
   /**
@@ -22,97 +23,87 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   const std::string package_path =
       ros::package::getPath("forest_fire_detection_system");
 
-  const std::string m300_stereo_config_path =
-      package_path + "/config/m300_front_stereo_param.yaml";
-  stereo_cam_operator = std::make_shared<FFDS::MODULES::StereoCamOperator>(
-      m300_stereo_config_path);
-  PRINT_INFO("get camera params from %s", m300_stereo_config_path.c_str());
-
-  // regist the shutDownHandler
-  signal(SIGINT, FFDS::MODULES::StereoCamOperator::ShutDownHandler);
-
   /**
    * Step: 2 create the camera instances
    * */
-  cv::Mat param_rect_left =
-      M210_STEREO::Config::get<cv::Mat>("leftRectificationMatrix");
-  cv::Mat param_rect_right =
-      M210_STEREO::Config::get<cv::Mat>("rightRectificationMatrix");
+  // NOTE: the siglonten sould be called in StereoCamOperator...
   cv::Mat param_proj_left =
       M210_STEREO::Config::get<cv::Mat>("leftProjectionMatrix");
   cv::Mat param_proj_right =
       M210_STEREO::Config::get<cv::Mat>("rightProjectionMatrix");
 
-  double fx = param_proj_left.at<double>(0, 0);
-  double fy = param_proj_left.at<double>(1, 1);
-  double principal_x = param_proj_left.at<double>(0, 2);
-  double principal_y = param_proj_left.at<double>(1, 2);
-  double baseline_x_fx = param_proj_right.at<double>(0, 3);
-  double baseline = baseline_x_fx / fx;
+  Eigen::Matrix3d left_K, right_K;
+  Eigen::Vector3d left_t, right_t;
+  convert2Eigen(param_proj_left, &left_K, &left_t);
+  convert2Eigen(param_proj_right, &right_K, &right_t);
 
+  // left t
+  left_t = Eigen::Vector3d::Zero();
+
+  // Create new cameras
   camera_left_ = std::make_shared<stereo_camera_vo::common::Camera>(
-      fx, fy, principal_x, principal_y, baseline, Sophus::SE3d());
-
-  Eigen::Vector3d t;
-  t << baseline, 0.0f, 0.0f;
+      left_K(0, 0), left_K(1, 1), left_K(0, 2), left_K(1, 2), left_t.norm(),
+      Sophus::SE3d(Sophus::SO3d(), left_t));
   camera_right_ = std::make_shared<stereo_camera_vo::common::Camera>(
-      fx, fy, principal_x, principal_y, baseline,
-      Sophus::SE3d(Sophus::SO3d(), t));
+      right_K(0, 0), right_K(1, 1), right_K(0, 2), right_K(1, 2),
+      right_t.norm(), Sophus::SE3d(Sophus::SO3d(), right_t));
 
   /**
    * Step: 3 create the frontend instance
    * */
-  const std::string stereo_vo_config_path =
-      package_path + "/config/stereo_vo_config.yaml";
-  frontend_ = std::make_shared<stereo_camera_vo::module::Frontend>(
-      camera_left_, camera_right_, true, stereo_vo_config_path);
-  PRINT_INFO("get stereo_vo_config params from %s",
-             stereo_vo_config_path.c_str());
+  const std::string frontend_config_path =
+      package_path + "/config/frontend_config.yaml";
+  // read vo parameters from config file
+  stereo_camera_vo::module::Frontend::Param frontend_param;
+
+  YAML::Node node = YAML::LoadFile(frontend_config_path);
+  frontend_param.num_features_ =
+      stereo_camera_vo::tool::GetParam<int>(node, "num_features", 200);
+  frontend_param.num_features_init_ =
+      stereo_camera_vo::tool::GetParam<int>(node, "num_features_init", 100);
+  frontend_param.num_features_tracking_ =
+      stereo_camera_vo::tool::GetParam<int>(node, "num_features_tracking", 50);
+  frontend_param.num_features_tracking_bad_ =
+      stereo_camera_vo::tool::GetParam<int>(node, "num_features_tracking_bad",
+                                            40);
+  frontend_param.num_features_needed_for_keyframe_ =
+      stereo_camera_vo::tool::GetParam<int>(
+          node, "num_features_needed_for_keyframe", 80);
+
+  // create frontend
+  frontend_ = stereo_camera_vo::module::Frontend::Ptr(
+      new stereo_camera_vo::module::Frontend(camera_left_, camera_right_,
+                                             frontend_param, true));
+
+  PRINT_INFO("get frontend_config params from %s",
+             frontend_config_path.c_str());
 }
 
-Sophus::SE3d FFDS::MODULES::PoseCalculator::Twb2Twc(
-    const geometry_msgs::QuaternionStamped att_body_ros,
-    const Eigen::Vector3d trans) {
-  Eigen::Quaterniond att_body, rotate_quat_bc;
-
-  att_body.w() = att_body_ros.quaternion.w;
-  att_body.x() = att_body_ros.quaternion.x;
-  att_body.y() = att_body_ros.quaternion.y;
-  att_body.z() = att_body_ros.quaternion.z;
-
-  rotate_quat_bc.w() = 0.5f;
-  rotate_quat_bc.x() = -0.5f;
-  rotate_quat_bc.y() = 0.5f;
-  rotate_quat_bc.z() = -0.5f;
-
-  Sophus::SE3d T_wb(att_body, trans),
-      T_bc(rotate_quat_bc, Eigen::Vector3d::Zero());
-
-  return T_wb * T_bc;
-}
-
-void FFDS::MODULES::PoseCalculator::Step() {
-  stereo_cam_operator->UpdateOnce();
-
-  cv::Mat left_img = stereo_cam_operator->GetRectLeftImgOnce();
-  cv::Mat right_img = stereo_cam_operator->GetRectRightImgOnce();
+Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
+                                                 const cv::Mat& right_img,
+                                                 const Sophus::SE3d pose_Twb) {
   if (left_img.empty() || right_img.empty()) {
     PRINT_WARN("no valid stereo images right now!");
-    return;
+    return Sophus::SE3d();
   }
 
   auto new_frame = stereo_camera_vo::common::Frame::CreateFrame();
   new_frame->left_img_ = left_img;
   new_frame->right_img_ = right_img;
 
-  geometry_msgs::QuaternionStamped att_body_ros =
-      stereo_cam_operator->GetAttOnce();
+  Sophus::SE3d pose_Tcw = Twb2Twc(pose_Twb).inverse();
 
-  // leave the translation to be calculated by VO
-  Sophus::SE3d init_pose = Twb2Twc(att_body_ros, Eigen::Vector3d::Zero());
+  if (is_first_frame_) {
+    first_frame_pose_Tcw_ = pose_Tcw;
+    is_first_frame_ = false;
+  }
+  // get current frame pose (it is actually relative motion according to the
+  // first frame ...)
+  Sophus::SE3d realtive_pose_Tcw = pose_Tcw * first_frame_pose_Tcw_.inverse();
 
-  // new_frame->SetPose(init_pose);
+  new_frame->use_init_pose_ = true;
+  new_frame->SetPose(realtive_pose_Tcw);
+
   frontend_->AddFrame(new_frame);
-  std::cout << "pose after: \n"
-            << new_frame->Pose().matrix().inverse() << std::endl;
+  return new_frame->Pose();
 }
