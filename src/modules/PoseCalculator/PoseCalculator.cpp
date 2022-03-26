@@ -93,16 +93,8 @@ Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
 
   Sophus::SE3d pose_Tcw = Twb2Twc(pose_Twb).inverse();
 
-  if (is_first_frame_) {
-    first_frame_pose_Tcw_ = pose_Tcw;
-    is_first_frame_ = false;
-  }
-  // get current frame pose (it is actually relative motion according to the
-  // first frame ...)
-  Sophus::SE3d realtive_pose_Tcw = pose_Tcw * first_frame_pose_Tcw_.inverse();
-
   new_frame->use_init_pose_ = true;
-  new_frame->SetPose(realtive_pose_Tcw);
+  new_frame->SetPose(pose_Tcw);
 
   frontend_->AddFrame(new_frame);
   return new_frame->Pose();

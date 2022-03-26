@@ -54,6 +54,19 @@ class PoseCalculator {
     return Twb * Tbc;
   }
 
+  static Sophus::SE3d Twc2Twb(const Sophus::SE3d& Twc) {
+    Eigen::Quaterniond rotate_quat_bc;
+
+    rotate_quat_bc.w() = 0.5f;
+    rotate_quat_bc.x() = -0.5f;
+    rotate_quat_bc.y() = 0.5f;
+    rotate_quat_bc.z() = -0.5f;
+
+    // camera and body coordinate only have a rotation between them...
+    Sophus::SE3d Tbc(rotate_quat_bc, Eigen::Vector3d::Zero());
+    return Twc * Tbc.inverse();
+  }
+
   static void convert2Eigen(const cv::Mat proj, Eigen::Matrix3d* K,
                             Eigen::Vector3d* t) {
     (*K) << proj.at<double>(0, 0), proj.at<double>(0, 1), proj.at<double>(0, 2),
