@@ -52,8 +52,12 @@ int main(int argc, char** argv) {
     q.y() = att_body_ros.quaternion.y;
     q.z() = att_body_ros.quaternion.z;
 
-    Sophus::SE3d Tcw = pose_calculator.Step(
-        left_img, right_img, Sophus::SE3d(q, Eigen::Vector3d::Zero()));
+    Sophus::SE3d Twb_init(q, Eigen::Vector3d::Zero());
+
+    Sophus::SE3d Tcw_init =
+        FFDS::MODULES::PoseCalculator::Twb2Twc(Twb_init).inverse();
+
+    Sophus::SE3d Tcw = pose_calculator.Step(left_img, right_img, Tcw_init);
 
     Sophus::SE3d Twb = FFDS::MODULES::PoseCalculator::Twc2Twb(Tcw.inverse());
 

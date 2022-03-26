@@ -81,7 +81,7 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
 
 Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
                                                  const cv::Mat& right_img,
-                                                 const Sophus::SE3d pose_Twb) {
+                                                 const Sophus::SE3d pose_Tcw) {
   if (left_img.empty() || right_img.empty()) {
     PRINT_WARN("no valid stereo images right now!");
     return Sophus::SE3d();
@@ -90,8 +90,6 @@ Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
   auto new_frame = stereo_camera_vo::common::Frame::CreateFrame();
   new_frame->left_img_ = left_img;
   new_frame->right_img_ = right_img;
-
-  Sophus::SE3d pose_Tcw = Twb2Twc(pose_Twb).inverse();
 
   new_frame->use_init_pose_ = true;
   new_frame->SetPose(pose_Tcw);

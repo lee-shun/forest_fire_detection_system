@@ -38,7 +38,7 @@ class PoseCalculator {
   PoseCalculator();
 
   Sophus::SE3d Step(const cv::Mat& left_img, const cv::Mat& right_img,
-                    const Sophus::SE3d pose_Twb);
+                    const Sophus::SE3d pose_Tcw);
 
   static Sophus::SE3d Twb2Twc(const Sophus::SE3d& Twb) {
     Eigen::Quaterniond rotate_quat_bc;
