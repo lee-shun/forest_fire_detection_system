@@ -46,10 +46,23 @@ namespace FFDS {
 namespace MODULES {
 class StereoCamOperator {
  public:
+  enum MessageFilterStatus { EMPTY, NORMAL };
+
   explicit StereoCamOperator(const std::string m300_stereo_config_path);
 
-  void UpdateOnce() { ros::spinOnce(); }
+  void UpdateOnce() {
+    ros::spinOnce();
 
+    if (img_rect_left_.empty() || img_rect_right_.empty()) {
+      message_filter_status_ = MessageFilterStatus::EMPTY;
+    } else {
+      message_filter_status_ = MessageFilterStatus::NORMAL;
+    }
+  }
+
+  const MessageFilterStatus& GetMessageFilterStatus() const {
+    return message_filter_status_;
+  }
   const sensor_msgs::PointCloud2& GetRosPtCloudOnce() const {
     return ros_pt_cloud_;
   }
@@ -74,6 +87,8 @@ class StereoCamOperator {
   M210_STEREO::CameraParam::Ptr camera_right_ptr_;
   M210_STEREO::StereoFrame::Ptr stereo_frame_ptr_;
 
+  MessageFilterStatus message_filter_status_{MessageFilterStatus::EMPTY};
+
   message_filters::Subscriber<sensor_msgs::Image> img_left_sub_;
   message_filters::Subscriber<sensor_msgs::Image> img_right_sub_;
   message_filters::Subscriber<geometry_msgs::QuaternionStamped> attitude_sub_;
@@ -82,8 +97,8 @@ class StereoCamOperator {
       sensor_msgs::Image, sensor_msgs::Image, geometry_msgs::QuaternionStamped>
       ImgsAttSyncPloicy;
   // typedef message_filters::sync_policies::ExactTime<
-  //     sensor_msgs::Image, sensor_msgs::Image, geometry_msgs::QuaternionStamped>
-  //     ImgsAttSyncPloicy;
+  //     sensor_msgs::Image, sensor_msgs::Image,
+  //     geometry_msgs::QuaternionStamped> ImgsAttSyncPloicy;
 
   std::shared_ptr<message_filters::Synchronizer<ImgsAttSyncPloicy>>
       imgs_att_synchronizer_{nullptr};
