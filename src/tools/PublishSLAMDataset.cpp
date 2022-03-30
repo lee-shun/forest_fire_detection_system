@@ -23,35 +23,6 @@
 #include <ros/package.h>
 #include <geometry_msgs/QuaternionStamped.h>
 
-bool GetTwbAtIndex(const std::string pose_path, const int pose_index,
-                   Eigen::Quaterniond* att) {
-  std::ifstream pose_fin_;
-  pose_fin_.open(pose_path);
-  if (!pose_fin_) {
-    PRINT_ERROR("can not open %s in given path, no such file or directory!",
-                pose_path.c_str());
-    return false;
-  }
-
-  std::string pose_tmp;
-  std::vector<double> q_elements;
-  stereo_camera_vo::tool::SeekToLine(pose_fin_, pose_index);
-  // read each w, x, y, z, everytime
-  for (int i = 0; i < 4; ++i) {
-    if (!getline(pose_fin_, pose_tmp, ',')) {
-      PRINT_WARN("pose reading error! at index %d", pose_index);
-      return false;
-    }
-    // PRINT_DEBUG("read pose-wxyz:%.8f", std::stod(pose_tmp));
-    q_elements.push_back(std::stod(pose_tmp));
-  }
-
-  *att = Eigen::Quaterniond(q_elements[0], q_elements[1], q_elements[2],
-                            q_elements[3]);
-
-  return true;
-}
-
 int main(int argc, char** argv) {
   ros::init(argc, argv, "publish_SLAM_dataset");
   ros::NodeHandle nh;
@@ -60,9 +31,8 @@ int main(int argc, char** argv) {
       "dji_osdk_ros/stereo_vga_front_left_images", 1);
   ros::Publisher right_img_pub = nh.advertise<sensor_msgs::Image>(
       "dji_osdk_ros/stereo_vga_front_right_images", 1);
-  ros::Publisher att_body_pub = nh.advertise<sensor_msgs::Image>(
-      "dji_osdk_ros/attitude", 10);
-
+  ros::Publisher att_body_pub =
+      nh.advertise<sensor_msgs::Image>("dji_osdk_ros/attitude", 10);
 
   const std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_1";
 
@@ -72,27 +42,28 @@ int main(int argc, char** argv) {
   int pose_index = 0;
   while (ros::ok()) {
     ros::spinOnce();
-    stereo_camera_vo::common::Frame::Ptr p_frame = m300_dataset.NextFrame();
 
-    if (nullptr == p_frame) {
-      PRINT_INFO("quit!");
+    stereo_camera_vo::common::Frame::Ptr new_frame =
+        stereo_camera_vo::common::Frame::CreateFrame();
+    if (!m300_dataset.NextFrame(new_frame)) {
+      PRINT_INFO("end of publish!");
       break;
     }
 
     ros::Time current_time = ros::Time::now();
     sensor_msgs::ImagePtr ros_img_left =
-        FFDS::TOOLS::CV2ROSImg(p_frame->left_img_, "mono8");
+        FFDS::TOOLS::CV2ROSImg(new_frame->left_img_, "mono8");
     ros_img_left->header.frame_id = "vag_left";
     ros_img_left->header.stamp = current_time;
 
     sensor_msgs::ImagePtr ros_img_right =
-        FFDS::TOOLS::CV2ROSImg(p_frame->right_img_, "mono8");
+        FFDS::TOOLS::CV2ROSImg(new_frame->right_img_, "mono8");
     ros_img_right->header.frame_id = "vag_right";
     ros_img_right->header.stamp = current_time;
 
     Eigen::Quaterniond att_body;
-    if (!GetTwbAtIndex(m300_dataset_path + "/pose.txt", pose_index,
-                       &att_body)) {
+    if (!stereo_camera_vo::tool::M300Dataset::GetAttByIndex(
+            m300_dataset_path + "/pose.txt", pose_index, &att_body)) {
       PRINT_ERROR("Quit!");
       break;
     }
