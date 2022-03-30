@@ -22,6 +22,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/QuaternionStamped.h>
+
 bool GetTwbAtIndex(const std::string pose_path, const int pose_index,
                    Eigen::Quaterniond* att) {
   std::ifstream pose_fin_;
@@ -55,6 +56,14 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "publish_SLAM_dataset");
   ros::NodeHandle nh;
 
+  ros::Publisher left_img_pub = nh.advertise<sensor_msgs::Image>(
+      "dji_osdk_ros/stereo_vga_front_left_images", 1);
+  ros::Publisher right_img_pub = nh.advertise<sensor_msgs::Image>(
+      "dji_osdk_ros/stereo_vga_front_right_images", 1);
+  ros::Publisher att_body_pub = nh.advertise<sensor_msgs::Image>(
+      "dji_osdk_ros/attitude", 10);
+
+
   const std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_1";
 
   stereo_camera_vo::tool::M300Dataset m300_dataset(m300_dataset_path);
@@ -62,6 +71,7 @@ int main(int argc, char** argv) {
 
   int pose_index = 0;
   while (ros::ok()) {
+    ros::spinOnce();
     stereo_camera_vo::common::Frame::Ptr p_frame = m300_dataset.NextFrame();
 
     if (nullptr == p_frame) {
@@ -93,7 +103,10 @@ int main(int argc, char** argv) {
     att_body_ros.quaternion.z = att_body.z();
     att_body_ros.header.stamp = current_time;
     att_body_ros.header.frame_id = "body_FLU";
-    std::cout << "att:\n" << att_body_ros << std::endl;
+
+    left_img_pub.publish(ros_img_left);
+    right_img_pub.publish(ros_img_right);
+    att_body_pub.publish(att_body_ros);
 
     ros::Rate(10).sleep();
     ++pose_index;
