@@ -33,25 +33,25 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
   /**
    * Step: 2 open stereo camera for vga images
    */
-  stereo_vga_subscription_client_ =
-      nh_.serviceClient<dji_osdk_ros::StereoVGASubscription>(
-          "stereo_vga_subscription");
-  PRINT_INFO("Wait for the stereo_vga_subscription to open stereo cameras...");
-  stereo_vga_subscription_client_.waitForExistence();
-
-  dji_osdk_ros::StereoVGASubscription set_stereo_vga_subscription;
-  set_stereo_vga_subscription.request.vga_freq =
-      set_stereo_vga_subscription.request.VGA_20_HZ;
-  set_stereo_vga_subscription.request.front_vga = 1;
-  set_stereo_vga_subscription.request.unsubscribe_vga = 0;
-
-  stereo_vga_subscription_client_.call(set_stereo_vga_subscription);
-  if (set_stereo_vga_subscription.response.result) {
-    PRINT_INFO("Set stereo vga subscription successfully!");
-  } else {
-    PRINT_ERROR("Set stereo vga subscription failed!");
-    return;
-  }
+  // stereo_vga_subscription_client_ =
+  //     nh_.serviceClient<dji_osdk_ros::StereoVGASubscription>(
+  //         "stereo_vga_subscription");
+  // PRINT_INFO("Wait for the stereo_vga_subscription to open stereo cameras...");
+  // stereo_vga_subscription_client_.waitForExistence();
+  //
+  // dji_osdk_ros::StereoVGASubscription set_stereo_vga_subscription;
+  // set_stereo_vga_subscription.request.vga_freq =
+  //     set_stereo_vga_subscription.request.VGA_20_HZ;
+  // set_stereo_vga_subscription.request.front_vga = 1;
+  // set_stereo_vga_subscription.request.unsubscribe_vga = 0;
+  //
+  // stereo_vga_subscription_client_.call(set_stereo_vga_subscription);
+  // if (set_stereo_vga_subscription.response.result) {
+  //   PRINT_INFO("Set stereo vga subscription successfully!");
+  // } else {
+  //   PRINT_ERROR("Set stereo vga subscription failed!");
+  //   return;
+  // }
 
   /**
    * Step: 3 subscribe left and right, and bind them.

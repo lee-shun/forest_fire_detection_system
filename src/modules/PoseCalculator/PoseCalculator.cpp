@@ -23,10 +23,13 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   const std::string package_path =
       ros::package::getPath("forest_fire_detection_system");
 
+  const std::string m300_stereo_config_path =
+      package_path + "/config/m300_front_stereo_param.yaml";
+
   /**
    * Step: 2 create the camera instances
    * */
-  // NOTE: the siglonten sould be called in StereoCamOperator...
+  M210_STEREO::Config::setParamFile(m300_stereo_config_path);
   cv::Mat param_proj_left =
       M210_STEREO::Config::get<cv::Mat>("leftProjectionMatrix");
   cv::Mat param_proj_right =

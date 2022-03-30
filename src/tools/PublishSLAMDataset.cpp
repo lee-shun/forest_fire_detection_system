@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
       "dji_osdk_ros/stereo_vga_front_left_images", 1);
   ros::Publisher right_img_pub = nh.advertise<sensor_msgs::Image>(
       "dji_osdk_ros/stereo_vga_front_right_images", 1);
-  ros::Publisher att_body_pub =
-      nh.advertise<sensor_msgs::Image>("dji_osdk_ros/attitude", 10);
+  ros::Publisher att_body_pub = nh.advertise<geometry_msgs::QuaternionStamped>(
+      "dji_osdk_ros/attitude", 10);
 
   const std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_1";
 
