@@ -36,8 +36,8 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
   // stereo_vga_subscription_client_ =
   //     nh_.serviceClient<dji_osdk_ros::StereoVGASubscription>(
   //         "stereo_vga_subscription");
-  // PRINT_INFO("Wait for the stereo_vga_subscription to open stereo cameras...");
-  // stereo_vga_subscription_client_.waitForExistence();
+  // PRINT_INFO("Wait for the stereo_vga_subscription to open stereo
+  // cameras..."); stereo_vga_subscription_client_.waitForExistence();
   //
   // dji_osdk_ros::StereoVGASubscription set_stereo_vga_subscription;
   // set_stereo_vga_subscription.request.vga_freq =
@@ -63,7 +63,7 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
 
   imgs_att_synchronizer_ =
       std::make_shared<message_filters::Synchronizer<ImgsAttSyncPloicy>>(
-          ImgsAttSyncPloicy(10), img_left_sub_, img_right_sub_, attitude_sub_);
+          ImgsAttSyncPloicy(1), img_left_sub_, img_right_sub_, attitude_sub_);
 
   imgs_att_synchronizer_->registerCallback(boost::bind(
       &StereoCamOperator::StereoImgAttPtCloudCallback, this, _1, _2, _3));
@@ -76,24 +76,32 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
     const sensor_msgs::ImageConstPtr &img_left,
     const sensor_msgs::ImageConstPtr &img_right,
     const geometry_msgs::QuaternionStampedConstPtr &att) {
+  att_ = *att;
   // copy to dji_osdk_ros
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
   memcpy(&img_VGA_img.img_vec[0], &img_left->data[0],
          sizeof(char) * M210_STEREO::VGA_HEIGHT * M210_STEREO::VGA_WIDTH);
   memcpy(&img_VGA_img.img_vec[1], &img_right->data[0],
          sizeof(char) * M210_STEREO::VGA_HEIGHT * M210_STEREO::VGA_WIDTH);
+
+  if (img_left->header.stamp != img_right->header.stamp) {
+    PRINT_INFO("uneq");
+  } else {
+    PRINT_INFO("eq");
+  }
+
   img_VGA_img.frame_index = img_left->header.seq;
   img_VGA_img.time_stamp = img_left->header.stamp.nsec;
 
   stereo_frame_ptr_->readStereoImgs(img_VGA_img);
   stereo_frame_ptr_->rectifyImgs();
+  img_rect_left_ = stereo_frame_ptr_->getRectLeftImg();
+  img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
+
   stereo_frame_ptr_->computeDisparityMap();
   stereo_frame_ptr_->filterDisparityMap();
   stereo_frame_ptr_->unprojectROSPtCloud();
 
-  att_ = *att;
-  img_rect_left_ = stereo_frame_ptr_->getRectLeftImg();
-  img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
   ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
 }
 

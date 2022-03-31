@@ -94,7 +94,7 @@ Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
   new_frame->left_img_ = left_img;
   new_frame->right_img_ = right_img;
 
-  new_frame->use_init_pose_ = true;
+  new_frame->use_init_pose_ = false;
   new_frame->SetPose(pose_Tcw);
 
   frontend_->AddFrame(new_frame);

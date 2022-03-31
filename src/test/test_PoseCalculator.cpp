@@ -62,6 +62,8 @@ int main(int argc, char** argv) {
     Sophus::SE3d Twb = FFDS::MODULES::PoseCalculator::Twc2Twb(Tcw.inverse());
 
     std::cout << "drone pose after: \n" << Twb.matrix() << std::endl;
+
+    ros::Rate(10).sleep();
   }
 
   return 0;

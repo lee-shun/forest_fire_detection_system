@@ -66,8 +66,9 @@ class StereoCamOperator {
   const sensor_msgs::PointCloud2& GetRosPtCloudOnce() const {
     return ros_pt_cloud_;
   }
-  const cv::Mat& GetRectLeftImgOnce() const { return img_rect_left_; }
-  const cv::Mat& GetRectRightImgOnce() const { return img_rect_right_; }
+  // NOTE(lee-shun): these are return clone
+  cv::Mat GetRectLeftImgOnce() const { return img_rect_left_.clone(); }
+  cv::Mat GetRectRightImgOnce() const { return img_rect_right_.clone(); }
   const geometry_msgs::QuaternionStamped& GetAttOnce() const { return att_; }
 
   // catch ctrl+c to stop the vga subscription...
