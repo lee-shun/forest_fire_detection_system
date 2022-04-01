@@ -16,6 +16,8 @@
 #include <modules/StereoCameraOperator/StereoCamOperator.hpp>
 #include "ros/init.h"
 
+bool FFDS::MODULES::StereoCamOperator::stereo_camera_is_open = false;
+
 FFDS::MODULES::StereoCamOperator::StereoCamOperator(
     const std::string m300_stereo_config_path) {
   /**
@@ -33,24 +35,30 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
   /**
    * Step: 2 open stereo camera for vga images
    */
-  stereo_vga_subscription_client_ =
-      nh_.serviceClient<dji_osdk_ros::StereoVGASubscription>(
-          "stereo_vga_subscription");
-  PRINT_INFO("Wait for the stereo_vga_subscription to open stereo cameras...");
-  stereo_vga_subscription_client_.waitForExistence();
+  if (!stereo_camera_is_open) {
+    stereo_vga_subscription_client_ =
+        nh_.serviceClient<dji_osdk_ros::StereoVGASubscription>(
+            "stereo_vga_subscription");
+    PRINT_INFO(
+        "wait for the stereo_vga_subscription to open stereo cameras...");
+    stereo_vga_subscription_client_.waitForExistence();
 
-  dji_osdk_ros::StereoVGASubscription set_stereo_vga_subscription;
-  set_stereo_vga_subscription.request.vga_freq =
-      set_stereo_vga_subscription.request.VGA_20_HZ;
-  set_stereo_vga_subscription.request.front_vga = 1;
-  set_stereo_vga_subscription.request.unsubscribe_vga = 0;
+    dji_osdk_ros::StereoVGASubscription set_stereo_vga_subscription;
+    set_stereo_vga_subscription.request.vga_freq =
+        set_stereo_vga_subscription.request.VGA_20_HZ;
+    set_stereo_vga_subscription.request.front_vga = 1;
+    set_stereo_vga_subscription.request.unsubscribe_vga = 0;
 
-  stereo_vga_subscription_client_.call(set_stereo_vga_subscription);
-  if (set_stereo_vga_subscription.response.result) {
-    PRINT_INFO("Set stereo vga subscription successfully!");
+    stereo_vga_subscription_client_.call(set_stereo_vga_subscription);
+    if (set_stereo_vga_subscription.response.result) {
+      PRINT_INFO("set stereo vga subscription successfully!");
+      stereo_camera_is_open = true;
+    } else {
+      PRINT_ERROR("set stereo vga subscription failed!");
+      stereo_camera_is_open = false;
+    }
   } else {
-    PRINT_ERROR("Set stereo vga subscription failed!");
-    return;
+    PRINT_INFO("stereo camera is already open!");
   }
 
   /**
@@ -103,8 +111,13 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
 // handle ctrl+c shutdown stop the vga...
 void FFDS::MODULES::StereoCamOperator::ShutDownHandler(int sig_num) {
   PRINT_INFO("Caught shutdown signal: %d", sig_num);
-  ros::NodeHandle nh;
 
+  if (!stereo_camera_is_open) {
+    PRINT_INFO("stereo is already closed!");
+    exit(sig_num);
+  }
+
+  ros::NodeHandle nh;
   ros::ServiceClient stereo_vga_subscription_client =
       nh.serviceClient<dji_osdk_ros::StereoVGASubscription>(
           "stereo_vga_subscription");
@@ -115,8 +128,10 @@ void FFDS::MODULES::StereoCamOperator::ShutDownHandler(int sig_num) {
   stereo_vga_subscription_client.call(set_stereo_vga_subscription);
   if (set_stereo_vga_subscription.response.result) {
     PRINT_INFO("Unsubscript stereo vga successfully!");
+    stereo_camera_is_open = false;
   } else {
     PRINT_ERROR("Unsubscript stereo vga failed!");
   }
+
   exit(sig_num);
 }

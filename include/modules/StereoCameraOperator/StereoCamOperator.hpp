@@ -75,6 +75,9 @@ class StereoCamOperator {
   static void ShutDownHandler(int sig_num);
 
  private:
+  // indicate the camera status
+  static bool stereo_camera_is_open;
+
   ros::NodeHandle nh_;
   ros::ServiceClient stereo_vga_subscription_client_;
 
@@ -109,6 +112,7 @@ class StereoCamOperator {
       const sensor_msgs::ImageConstPtr& img_right,
       const geometry_msgs::QuaternionStampedConstPtr& att);
 };
+
 }  // namespace MODULES
 }  // namespace FFDS
 
