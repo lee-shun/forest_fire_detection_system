@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
                            att_body_ros.quaternion.z);
     ++img_index;
 
-    ros::Rate(10).sleep();
+    ros::Rate(20).sleep();
   }
 
   return 0;
