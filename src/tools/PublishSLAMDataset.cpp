@@ -22,10 +22,35 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/QuaternionStamped.h>
+#include <dji_osdk_ros/StereoVGASubscription.h>
+
+bool g_vga_is_open = false;
+
+bool StereoVGASubscriptionCallback(
+    dji_osdk_ros::StereoVGASubscription::Request& request,
+    dji_osdk_ros::StereoVGASubscription::Response& response) {
+  if (request.unsubscribe_vga == 1) {
+    response.result = true;
+    g_vga_is_open = false;
+    ROS_INFO("unsubscribe stereo vga images");
+    return true;
+  }
+
+  if (request.front_vga == 1) {
+    g_vga_is_open = true;
+    response.result = true;
+    ros::Duration(1).sleep();
+  }
+
+  return true;
+}
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "publish_SLAM_dataset");
   ros::NodeHandle nh;
+
+  ros::ServiceServer subscribe_stereo_vga_server = nh.advertiseService(
+      "stereo_vga_subscription", &StereoVGASubscriptionCallback);
 
   ros::Publisher left_img_pub = nh.advertise<sensor_msgs::Image>(
       "dji_osdk_ros/stereo_vga_front_left_images", 100);
@@ -43,10 +68,16 @@ int main(int argc, char** argv) {
   while (ros::ok()) {
     ros::spinOnce();
 
+    if (!g_vga_is_open) {
+      ros::Duration(0.5).sleep();
+      PRINT_INFO("wait for opening vga!");
+      continue;
+    }
+
     stereo_camera_vo::common::Frame::Ptr new_frame =
         stereo_camera_vo::common::Frame::CreateFrame();
     if (!m300_dataset.NextFrame(new_frame)) {
-      PRINT_INFO("end of publish!");
+      PRINT_INFO("no new frame!");
       break;
     }
 
@@ -64,7 +95,7 @@ int main(int argc, char** argv) {
     Eigen::Quaterniond att_body;
     if (!stereo_camera_vo::tool::M300Dataset::GetAttByIndex(
             m300_dataset_path + "/pose.txt", pose_index, &att_body)) {
-      PRINT_ERROR("Quit!");
+      PRINT_ERROR("pose file reaches end!");
       break;
     }
     geometry_msgs::QuaternionStamped att_body_ros;
