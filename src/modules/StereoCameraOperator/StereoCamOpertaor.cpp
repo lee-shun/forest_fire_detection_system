@@ -56,14 +56,15 @@ FFDS::MODULES::StereoCamOperator::StereoCamOperator(
   /**
    * Step: 3 subscribe left and right, and bind them.
    * */
-  img_left_sub_.subscribe(nh_, "dji_osdk_ros/stereo_vga_front_left_images", 10);
+  img_left_sub_.subscribe(nh_, "dji_osdk_ros/stereo_vga_front_left_images",
+                          100);
   img_right_sub_.subscribe(nh_, "dji_osdk_ros/stereo_vga_front_right_images",
-                           10);
-  attitude_sub_.subscribe(nh_, "dji_osdk_ros/attitude", 10);
+                           100);
+  attitude_sub_.subscribe(nh_, "dji_osdk_ros/attitude", 100);
 
   imgs_att_synchronizer_ =
       std::make_shared<message_filters::Synchronizer<ImgsAttSyncPloicy>>(
-          ImgsAttSyncPloicy(10), img_left_sub_, img_right_sub_, attitude_sub_);
+          ImgsAttSyncPloicy(100), img_left_sub_, img_right_sub_, attitude_sub_);
 
   imgs_att_synchronizer_->registerCallback(boost::bind(
       &StereoCamOperator::StereoImgAttPtCloudCallback, this, _1, _2, _3));

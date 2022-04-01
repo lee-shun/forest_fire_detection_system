@@ -54,12 +54,13 @@ int main(int argc, char** argv) {
 
     Sophus::SE3d Twb_init(q, Eigen::Vector3d::Zero());
 
+    std::cout << "drone pose before: \n" << Twb_init.matrix() << std::endl;
+
     Sophus::SE3d Tcw_init =
         FFDS::MODULES::PoseCalculator::Twb2Twc(Twb_init).inverse();
-
-    Sophus::SE3d Tcw = pose_calculator.Step(left_img, right_img, Tcw_init);
-
-    Sophus::SE3d Twb = FFDS::MODULES::PoseCalculator::Twc2Twb(Tcw.inverse());
+    pose_calculator.Step(left_img, right_img, &Tcw_init);
+    Sophus::SE3d Twb =
+        FFDS::MODULES::PoseCalculator::Twc2Twb(Tcw_init.inverse());
 
     std::cout << "drone pose after: \n" << Twb.matrix() << std::endl;
   }

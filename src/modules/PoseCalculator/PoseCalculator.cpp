@@ -82,21 +82,23 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
              frontend_config_path.c_str());
 }
 
-Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
-                                                 const cv::Mat& right_img,
-                                                 const Sophus::SE3d pose_Tcw) {
+bool FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
+                                         const cv::Mat& right_img,
+                                         Sophus::SE3d* pose_Tcw) {
   if (left_img.empty() || right_img.empty()) {
     PRINT_WARN("no valid stereo images right now!");
-    return Sophus::SE3d();
+    return false;
   }
 
   auto new_frame = stereo_camera_vo::common::Frame::CreateFrame();
   new_frame->left_img_ = left_img;
   new_frame->right_img_ = right_img;
 
-  new_frame->use_init_pose_ = false;
-  // new_frame->SetPose(pose_Tcw);
-
+  new_frame->use_init_pose_ = true;
+  new_frame->SetPose(*pose_Tcw);
   frontend_->AddFrame(new_frame);
-  return new_frame->Pose();
+
+  *pose_Tcw = new_frame->Pose();
+
+  return true;
 }
