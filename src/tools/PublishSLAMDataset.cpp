@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
   const std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_1";
 
   stereo_camera_vo::tool::M300Dataset m300_dataset(m300_dataset_path);
-  m300_dataset.Init();
+  if (!m300_dataset.Init()) return -1;
 
   int pose_index = 0;
   while (ros::ok()) {
