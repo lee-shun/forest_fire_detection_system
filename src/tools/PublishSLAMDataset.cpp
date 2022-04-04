@@ -59,7 +59,14 @@ int main(int argc, char** argv) {
   ros::Publisher att_body_pub = nh.advertise<geometry_msgs::QuaternionStamped>(
       "dji_osdk_ros/attitude", 100);
 
-  const std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_1";
+  std::string m300_dataset_path = "/media/ls/WORK/slam_m300/m300_data_2";
+  if (2 != argc) {
+    PRINT_ERROR("add m300 dataset path!");
+    return -1;
+  } else {
+    m300_dataset_path = argv[1];
+    PRINT_INFO("publish dataset: %s", m300_dataset_path.c_str());
+  }
 
   stereo_camera_vo::tool::M300Dataset m300_dataset(m300_dataset_path);
   if (!m300_dataset.Init()) return -1;
