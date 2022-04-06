@@ -33,6 +33,8 @@ find_package(
   image_transport
   dji_osdk_ros
   geometry_msgs
+  sensor_msgs
+  pcl_conversions
   message_generation
   nav_msgs
   nmea_msgs

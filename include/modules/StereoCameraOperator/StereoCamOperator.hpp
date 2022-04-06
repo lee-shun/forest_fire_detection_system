@@ -22,6 +22,7 @@
 #include <dji_osdk_ros/StereoVGASubscription.h>
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/QuaternionStamped.h>
+#include <sensor_msgs/PointCloud2.h>
 
 // asyn sensor data
 #include <message_filters/subscriber.h>
@@ -50,6 +51,8 @@ class StereoCamOperator {
 
   explicit StereoCamOperator(const std::string m300_stereo_config_path);
 
+  void IfUseFilter(bool use_filter) { use_pt_cloud_filter_ = use_filter; }
+
   void UpdateOnce() {
     ros::spinOnce();
 
@@ -66,7 +69,6 @@ class StereoCamOperator {
   const sensor_msgs::PointCloud2& GetRosPtCloudOnce() const {
     return ros_pt_cloud_;
   }
-  // NOTE(lee-shun): these are return clone
   cv::Mat GetRectLeftImgOnce() const { return img_rect_left_.clone(); }
   cv::Mat GetRectRightImgOnce() const { return img_rect_right_.clone(); }
   const geometry_msgs::QuaternionStamped& GetAttOnce() const { return att_; }
@@ -106,6 +108,10 @@ class StereoCamOperator {
 
   std::shared_ptr<message_filters::Synchronizer<ImgsAttSyncPloicy>>
       imgs_att_synchronizer_{nullptr};
+
+  bool use_pt_cloud_filter_{true};
+  sensor_msgs::PointCloud2 FilterRosPtCloud(
+      sensor_msgs::PointCloud2& raw_cloud);
 
   void StereoImgAttPtCloudCallback(
       const sensor_msgs::ImageConstPtr& img_left,

@@ -14,7 +14,12 @@
  *******************************************************************************/
 #include <tools/PrintControl/PrintCtrlMacro.h>
 #include <modules/StereoCameraOperator/StereoCamOperator.hpp>
-#include "ros/init.h"
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 bool FFDS::MODULES::StereoCamOperator::stereo_camera_is_open = false;
 
@@ -106,6 +111,42 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
   stereo_frame_ptr_->unprojectROSPtCloud();
 
   ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
+  if (use_pt_cloud_filter_) {
+    ros_pt_cloud_ = FilterRosPtCloud(ros_pt_cloud_);
+  }
+}
+
+sensor_msgs::PointCloud2 FFDS::MODULES::StereoCamOperator::FilterRosPtCloud(
+    sensor_msgs::PointCloud2 &raw_cloud) {
+  // Container for original & filtered data
+  pcl::PCLPointCloud2 cloud;
+  pcl::PCLPointCloud2ConstPtr cloud_ptr(&cloud);
+
+  // Convert to PCL data type
+  pcl_conversions::toPCL(raw_cloud, cloud);
+
+  // perform statistical filtering
+  pcl::PCLPointCloud2 cloud_after_sor;
+  pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
+  sor.setInputCloud(cloud_ptr);
+  sor.setMeanK(30);
+  sor.setStddevMulThresh(1.0);
+  sor.filter(cloud_after_sor);
+
+  pcl::PCLPointCloud2ConstPtr cloud_after_sor_ptr(&cloud_after_sor);
+
+  // Perform the voxel filtering
+  pcl::PCLPointCloud2 cloud_after_vox;
+  pcl::VoxelGrid<pcl::PCLPointCloud2> vox;
+  vox.setInputCloud(cloud_after_sor_ptr);
+  vox.setLeafSize(0.1, 0.1, 0.1);
+  vox.filter(cloud_after_vox);
+
+  // Convert to ROS data type
+  sensor_msgs::PointCloud2 output;
+  pcl_conversions::moveFromPCL(cloud_after_vox, output);
+
+  return output;
 }
 
 // handle ctrl+c shutdown stop the vga...
