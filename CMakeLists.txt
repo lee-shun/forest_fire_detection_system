@@ -34,6 +34,8 @@ find_package(
   dji_osdk_ros
   geometry_msgs
   sensor_msgs
+  pcl_ros
+  pcl_msgs
   pcl_conversions
   message_generation
   nav_msgs
