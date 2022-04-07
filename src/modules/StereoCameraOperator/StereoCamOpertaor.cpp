@@ -20,6 +20,7 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/passthrough.h>
 
 bool FFDS::MODULES::StereoCamOperator::stereo_camera_is_open = false;
 
@@ -106,6 +107,11 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
   img_rect_left_ = stereo_frame_ptr_->getRectLeftImg();
   img_rect_right_ = stereo_frame_ptr_->getRectRightImg();
 
+  if (img_rect_left_.empty() || img_rect_right_.empty()) {
+    message_filter_status_ = MessageFilterStatus::EMPTY;
+    return;
+  }
+
   stereo_frame_ptr_->computeDisparityMap();
   stereo_frame_ptr_->filterDisparityMap();
   stereo_frame_ptr_->unprojectROSPtCloud();
@@ -119,27 +125,36 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
 sensor_msgs::PointCloud2 FFDS::MODULES::StereoCamOperator::FilterRosPtCloud(
     sensor_msgs::PointCloud2 &raw_cloud) {
   // Container for original & filtered data
-  pcl::PCLPointCloud2 cloud;
-  pcl::PCLPointCloud2ConstPtr cloud_ptr(&cloud);
+  pcl::PCLPointCloud2 *cloud = new pcl::PCLPointCloud2();
+  pcl::PCLPointCloud2ConstPtr cloud_ptr(cloud);
 
   // Convert to PCL data type
-  pcl_conversions::toPCL(raw_cloud, cloud);
+  pcl_conversions::toPCL(raw_cloud, *cloud);
 
-  // perform statistical filtering
-  pcl::PCLPointCloud2 cloud_after_sor;
-  pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
-  sor.setInputCloud(cloud_ptr);
-  sor.setMeanK(30);
-  sor.setStddevMulThresh(1.0);
-  sor.filter(cloud_after_sor);
+  // STEP: perform statistical filtering
+  // pcl::PCLPointCloud2 *cloud_after_sor = new pcl::PCLPointCloud2();
+  // pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
+  // sor.setInputCloud(cloud_ptr);
+  // sor.setMeanK(30);
+  // sor.setStddevMulThresh(1.0);
+  // sor.filter(*cloud_after_sor);
 
-  pcl::PCLPointCloud2ConstPtr cloud_after_sor_ptr(&cloud_after_sor);
+  // pcl::PCLPointCloud2ConstPtr cloud_after_sor_ptr(cloud_after_sor);
 
-  // Perform the voxel filtering
-  pcl::PCLPointCloud2 cloud_after_vox;
+  // STEP: pass trough
+  pcl::PassThrough<pcl::PCLPointCloud2> pass;
+  pass.setInputCloud(cloud_ptr);
+  pass.setFilterFieldName("z");
+  pass.setFilterLimits(1, 5);
+  pcl::PCLPointCloud2* cloud_after_pass = new pcl::PCLPointCloud2();
+  pcl::PCLPointCloud2ConstPtr cloud_after_pass_ptr(cloud_after_pass);
+  pass.filter(*cloud_after_pass);
+
+  // STEP: perform the voxel filtering
   pcl::VoxelGrid<pcl::PCLPointCloud2> vox;
-  vox.setInputCloud(cloud_after_sor_ptr);
-  vox.setLeafSize(0.1, 0.1, 0.1);
+  vox.setInputCloud(cloud_after_pass_ptr);
+  vox.setLeafSize(1, 1, 1);
+  pcl::PCLPointCloud2 cloud_after_vox;
   vox.filter(cloud_after_vox);
 
   // Convert to ROS data type
