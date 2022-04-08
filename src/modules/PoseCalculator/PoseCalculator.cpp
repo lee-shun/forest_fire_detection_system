@@ -76,7 +76,7 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   // create frontend
   frontend_ = stereo_camera_vo::module::Frontend::Ptr(
       new stereo_camera_vo::module::Frontend(camera_left_, camera_right_,
-                                             frontend_param, false));
+                                             frontend_param, true));
 
   PRINT_INFO("get frontend_config params from %s",
              frontend_config_path.c_str());
