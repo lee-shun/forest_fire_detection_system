@@ -17,6 +17,8 @@
 #ifndef INCLUDE_MODULES_GIMBALCAMERAOPERATOR_GIMBALCAMERAOPERATOR_HPP_
 #define INCLUDE_MODULES_GIMBALCAMERAOPERATOR_GIMBALCAMERAOPERATOR_HPP_
 
+#include <Eigen/Core>
+
 #include <dji_osdk_ros/CameraFocusPoint.h>
 #include <dji_osdk_ros/CameraSetZoomPara.h>
 #include <dji_osdk_ros/CameraTapZoomPoint.h>
@@ -28,7 +30,6 @@
 #include <ros/ros.h>
 #include <tools/PrintControl/PrintCtrlMacro.h>
 
-#include <PX4-Matrix/matrix/Matrix.hpp>
 #include <modules/BasicController/PIDController.hpp>
 #include <tools/MathLib.hpp>
 #include <tools/PrintControl/FileWritter.hpp>
@@ -112,7 +113,7 @@ class GimbalCameraOperator {
 
   void setGimbalActionDefault();
 
-  matrix::Vector3f camera2NED(const matrix::Vector3f& d_attInCamera);
+  Eigen::Vector3f camera2NED(const Eigen::Vector3f& d_attInCamera);
 
   PIDController pidYaw{0.015, 0.0, 0.0, false, false};
   PIDController pidPitch{0.015, 0.0, 0.0, false, false};

@@ -1,7 +1,7 @@
 /*******************************************************************************
  *   Copyright (C) 2021 Concordia NAVlab. All rights reserved.
  *
- *   @Filename: PrintCtrlMacro.h
+ *   @Filename: print_ctrl_macro.h
  *
  *   @Author: Shun Li
  *
@@ -59,7 +59,7 @@
   do {                                                                \
     if (level <= PCM_PRINT_LEVEL) {                                   \
       printf(PCM_COLOR(color, "[" #level "]"));                       \
-      printf(PCM_COLOR(36, "[%s:%d|in %s] "), PCM_FILENAME(__FILE__), \
+      printf(PCM_COLOR(36, " %s:%d (in %s) "), PCM_FILENAME(__FILE__), \
              __LINE__, __FUNCTION__);                                 \
       printf(__VA_ARGS__);                                            \
       printf("\n");                                                   \
@@ -139,4 +139,4 @@
     FPRINT(PCM_DEBUG, file_name, ##__VA_ARGS__); \
   } while (0);
 
-#endif  // INCLUDE_TOOLS_PRINTCONTROL_PRINTCTRLMACRO_H_
+#endif  //  INCLUDE_TOOLS_PRINTCONTROL_PRINTCTRLMACRO_H_
