@@ -112,13 +112,15 @@ void FFDS::MODULES::StereoCamOperator::StereoImgAttPtCloudCallback(
     return;
   }
 
-  stereo_frame_ptr_->computeDisparityMap();
-  stereo_frame_ptr_->filterDisparityMap();
-  stereo_frame_ptr_->unprojectROSPtCloud();
+  if (use_ptcloud_) {
+    stereo_frame_ptr_->computeDisparityMap();
+    stereo_frame_ptr_->filterDisparityMap();
+    stereo_frame_ptr_->unprojectROSPtCloud();
 
-  ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
-  if (use_pt_cloud_filter_) {
-    ros_pt_cloud_ = FilterRosPtCloud(ros_pt_cloud_);
+    ros_pt_cloud_ = stereo_frame_ptr_->getROSPtCloud();
+    if (use_ptcloud_filter_) {
+      ros_pt_cloud_ = FilterRosPtCloud(ros_pt_cloud_);
+    }
   }
 }
 
@@ -132,21 +134,20 @@ sensor_msgs::PointCloud2 FFDS::MODULES::StereoCamOperator::FilterRosPtCloud(
   pcl_conversions::toPCL(raw_cloud, *cloud);
 
   // STEP: perform statistical filtering
-  // pcl::PCLPointCloud2 *cloud_after_sor = new pcl::PCLPointCloud2();
   // pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
   // sor.setInputCloud(cloud_ptr);
   // sor.setMeanK(30);
   // sor.setStddevMulThresh(1.0);
-  // sor.filter(*cloud_after_sor);
-
+  // pcl::PCLPointCloud2 *cloud_after_sor = new pcl::PCLPointCloud2();
   // pcl::PCLPointCloud2ConstPtr cloud_after_sor_ptr(cloud_after_sor);
+  // sor.filter(*cloud_after_sor);
 
   // STEP: pass trough
   pcl::PassThrough<pcl::PCLPointCloud2> pass;
   pass.setInputCloud(cloud_ptr);
   pass.setFilterFieldName("z");
-  pass.setFilterLimits(1, 5);
-  pcl::PCLPointCloud2* cloud_after_pass = new pcl::PCLPointCloud2();
+  pass.setFilterLimits(2, 8);
+  pcl::PCLPointCloud2 *cloud_after_pass = new pcl::PCLPointCloud2();
   pcl::PCLPointCloud2ConstPtr cloud_after_pass_ptr(cloud_after_pass);
   pass.filter(*cloud_after_pass);
 

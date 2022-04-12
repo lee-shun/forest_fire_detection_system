@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
     right_img_pub.publish(ros_img_right);
     att_body_pub.publish(att_body_ros);
 
-    ros::Rate(10).sleep();
+    ros::Rate(5).sleep();
     ++pose_index;
   }
 

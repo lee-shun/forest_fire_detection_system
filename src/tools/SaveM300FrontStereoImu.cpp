@@ -48,6 +48,8 @@ int main(int argc, char** argv) {
   std::shared_ptr<FFDS::MODULES::StereoCamOperator> stereo_cam_operator =
       std::make_shared<FFDS::MODULES::StereoCamOperator>(
           m300_stereo_config_path);
+  stereo_cam_operator->IfGenerateRosPtCloud(false);
+
   // regist the shutDownHandler
   signal(SIGINT, FFDS::MODULES::StereoCamOperator::ShutDownHandler);
 
@@ -84,8 +86,6 @@ int main(int argc, char** argv) {
                            att_body_ros.quaternion.y,
                            att_body_ros.quaternion.z);
     ++img_index;
-
-    ros::Rate(20).sleep();
   }
 
   return 0;

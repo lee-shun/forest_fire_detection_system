@@ -18,6 +18,8 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 
+#include <stereo_camera_vo/tool/image_preprocess.h>
+
 #include "modules/PoseCalculator/PoseCalculator.hpp"
 #include "modules/StereoCameraOperator/StereoCamOperator.hpp"
 
@@ -27,6 +29,9 @@ Sophus::SE3d CalDronePose(
   // get images to calculate the pose
   cv::Mat left_img = stereo_camera_operator.GetRectLeftImgOnce();
   cv::Mat right_img = stereo_camera_operator.GetRectRightImgOnce();
+
+  stereo_camera_vo::tool::GammaTransform(left_img);
+  stereo_camera_vo::tool::GammaTransform(right_img);
 
   geometry_msgs::QuaternionStamped att_body_ros =
       stereo_camera_operator.GetAttOnce();

@@ -1,7 +1,7 @@
 <launch>
     <node pkg="forest_fire_detection_system"
     type="PublishSLAMDataset" name="PublishSLAMDataset_node"
-    args="/media/ls/WORK/slam_m300/m300_data_0" respawn="true"
+        args="/home/ls/m300_data" respawn="true"
     output="screen"></node>
     <node pkg="forest_fire_detection_system"
     type="test_PoseCalculator" name="test_PoseCalculator_node"
