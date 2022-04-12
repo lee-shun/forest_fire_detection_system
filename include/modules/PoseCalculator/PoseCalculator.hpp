@@ -37,9 +37,10 @@ class PoseCalculator {
  public:
   PoseCalculator();
 
-  ~PoseCalculator() {
-    frontend_->Stop();
-    PRINT_INFO("stop the frontend!");
+  bool Stop() {
+    if (nullptr != frontend_) frontend_->Stop();
+    PRINT_INFO("stop pose calculator!");
+    return true;
   }
 
   bool Step(const cv::Mat& left_img, const cv::Mat& right_img,

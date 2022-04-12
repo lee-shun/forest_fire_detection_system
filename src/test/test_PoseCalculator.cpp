@@ -107,5 +107,7 @@ int main(int argc, char** argv) {
     map2uav_br.sendTransform(map2uav_tf);
   }
 
+  pose_calculator.Stop();
+
   return 0;
 }

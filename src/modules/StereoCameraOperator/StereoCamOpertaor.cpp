@@ -153,7 +153,7 @@ sensor_msgs::PointCloud2 FFDS::MODULES::StereoCamOperator::FilterRosPtCloud(
   // STEP: perform the voxel filtering
   pcl::VoxelGrid<pcl::PCLPointCloud2> vox;
   vox.setInputCloud(cloud_after_pass_ptr);
-  vox.setLeafSize(1, 1, 1);
+  vox.setLeafSize(0.5, 0.5, 0.5);
   pcl::PCLPointCloud2 cloud_after_vox;
   vox.filter(cloud_after_vox);
 
