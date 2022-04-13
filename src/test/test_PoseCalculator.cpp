@@ -56,6 +56,8 @@ Sophus::SE3d CalDronePose(
   return Twb;
 }
 
+// NOTE: the point cloud(very slow) and pose calculate should not be in the same
+// loop.
 int main(int argc, char** argv) {
   ros::init(argc, argv, "test_pose_calculator_node");
   ros::NodeHandle nh;
