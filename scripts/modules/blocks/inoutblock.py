@@ -23,18 +23,22 @@ class Outlayer(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(Outlayer, self).__init__()
         # 1x1 Conv
-        self.convf = nn.ConvTranspose2d(in_channels, out_channels, 1, 1, 0)
-        self.relu = nn.ReLU()
+        self.convu = nn.ConvTranspose2d(in_channels, out_channels, 1, 2, 0)
         self.outscale = nn.UpsamplingNearest2d(scale_factor=2)
-        self.convo = nn.ConvTranspose2d(out_channels, out_channels, 7, 2, 3)
+        # self.convo = nn.ConvTranspose2d(out_channels, out_channels, 7, 2, 3)
+        # self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
         
     def forward(self, x):
-        y = self.convf(x)
-        y = self.relu(y)
+        y = self.convu(x)
         y = self.outscale(y)
-        y = self.convo(y)
-        
+        y = self.sigmoid(y)
+
+        # # change the y values
+        one = torch.ones_like(y)
+        zero = torch.zeros_like(y)
+        y = torch.where(y > 0.5, one, y)
+        # y = torch.where(y < 0.5, zero, y)
         return y
 
 if __name__ == "__main__":
@@ -42,5 +46,5 @@ if __name__ == "__main__":
     layer2 = Outlayer(in_channels=64, out_channels=1)
     feature_in = torch.randn((4, 64, 99, 99))
     feature_out = layer2(feature_in)
-    print(feature_out)
+    # print(feature_out)
     print(feature_out.size())

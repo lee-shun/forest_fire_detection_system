@@ -13,9 +13,9 @@ root = os.path.dirname(os.path.join(
 import numpy as np
 import sklearn.metrics as metrics
 
-modelname = 'Lightunet18_MSE_Adam'
-lr = '1e4'
-epochs = 'e30'
+modelname = 'Lightunet18_MSE_SGD'
+lr = '8.59e2'
+epochs = 'e10'
 process_model_param = 'process_' + modelname + '_' + lr + '_' + epochs + '.pth'
 model_param = modelname + '_' + lr + '_' + epochs + '.pth'
 loss_imgs = 'Loss_'+ modelname + '_' + lr + '_' + epochs +'.png'
@@ -40,7 +40,7 @@ def save_entire_model(epochs, model, optimizer, criterion):
     }, os.path.join(root, model_param))
 
 def load_model(checkpoint, model):
-    print('====> Loading checkpoint')
+    print('======> Loading checkpoint')
     model.load_state_dict(checkpoint['model_state_dict'])
 
 # compute accuracy
@@ -95,16 +95,27 @@ def save_plots(train_acc, val_acc, train_loss, val_loss):
 
 def plot_img_and_mask(img, pred, mask):
     print('=====> Saving prediction result')
-    fig, ax = plt.subplots(1, 3)
-    ax[0].set_title('Input image')
-    ax[0].imshow(img)
-    ax[1].set_title(f'Output prediction')
-    ax[1].imshow(pred)
-    ax[2].set_title('Target mask')
-    ax[2].imshow(mask)
-    plt.grid = False 
-    plt.xticks([]), plt.yticks([])
-    plt.show()
+    fig, ax = plt.subplots(3, 1)
+    # plt.grid = False 
+    # plt.xticks([]), plt.yticks([])
+
+    fig = plt.figure()
+    fig.set_size_inches(50,20)
+    ax1 = fig.add_subplot(131)
+    ax1.grid(False)
+    ax1.set_title('Input Image')
+    ax1.imshow(img)
+
+    ax2 = fig.add_subplot(132)
+    ax2.grid(False)
+    ax2.set_title('Output Prediction')
+    ax2.imshow(pred)
+     
+    ax3 = fig.add_subplot(133)
+    ax3.grid(False)
+    ax3.set_title('Target Mask')
+    ax3.imshow(mask)
+
     plt.savefig(os.path.join(root, show_imgs))
 
 # if __name__ == '__main__':
