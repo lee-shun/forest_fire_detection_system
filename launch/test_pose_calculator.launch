@@ -1,0 +1,9 @@
+<launch>
+    <node pkg="forest_fire_detection_system"
+    type="PublishSLAMDataset" name="PublishSLAMDataset_node"
+        args="/home/ls/m300_indoor_lab_high_freq_2" respawn="true"
+    output="screen"></node>
+    <node pkg="forest_fire_detection_system"
+    type="test_PoseCalculator" name="test_PoseCalculator_node"
+    args="" respawn="true" output="screen"></node>
+</launch>

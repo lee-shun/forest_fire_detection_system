@@ -22,6 +22,7 @@
 #include <dji_osdk_ros/StereoVGASubscription.h>
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/QuaternionStamped.h>
+#include <sensor_msgs/PointCloud2.h>
 
 // asyn sensor data
 #include <message_filters/subscriber.h>
@@ -50,6 +51,9 @@ class StereoCamOperator {
 
   explicit StereoCamOperator(const std::string m300_stereo_config_path);
 
+  void IfGenerateRosPtCloud(bool use_ptcloud) { use_ptcloud_ = use_ptcloud; }
+  void IfUsePtCloudFilter(bool use_filter) { use_ptcloud_filter_ = use_filter; }
+
   void UpdateOnce() {
     ros::spinOnce();
 
@@ -63,17 +67,24 @@ class StereoCamOperator {
   const MessageFilterStatus& GetMessageFilterStatus() const {
     return message_filter_status_;
   }
+
   const sensor_msgs::PointCloud2& GetRosPtCloudOnce() const {
     return ros_pt_cloud_;
   }
-  const cv::Mat& GetRectLeftImgOnce() const { return img_rect_left_; }
-  const cv::Mat& GetRectRightImgOnce() const { return img_rect_right_; }
+
+  cv::Mat GetRectLeftImgOnce() const { return img_rect_left_.clone(); }
+
+  cv::Mat GetRectRightImgOnce() const { return img_rect_right_.clone(); }
+
   const geometry_msgs::QuaternionStamped& GetAttOnce() const { return att_; }
 
   // catch ctrl+c to stop the vga subscription...
   static void ShutDownHandler(int sig_num);
 
  private:
+  // indicate the camera status
+  static bool stereo_camera_is_open;
+
   ros::NodeHandle nh_;
   ros::ServiceClient stereo_vga_subscription_client_;
 
@@ -103,11 +114,18 @@ class StereoCamOperator {
   std::shared_ptr<message_filters::Synchronizer<ImgsAttSyncPloicy>>
       imgs_att_synchronizer_{nullptr};
 
+  bool use_ptcloud_{true};
+  bool use_ptcloud_filter_{true};
+
+  sensor_msgs::PointCloud2 FilterRosPtCloud(
+      sensor_msgs::PointCloud2& raw_cloud);
+
   void StereoImgAttPtCloudCallback(
       const sensor_msgs::ImageConstPtr& img_left,
       const sensor_msgs::ImageConstPtr& img_right,
       const geometry_msgs::QuaternionStampedConstPtr& att);
 };
+
 }  // namespace MODULES
 }  // namespace FFDS
 

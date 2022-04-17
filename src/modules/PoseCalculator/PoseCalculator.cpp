@@ -23,10 +23,13 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   const std::string package_path =
       ros::package::getPath("forest_fire_detection_system");
 
+  const std::string m300_stereo_config_path =
+      package_path + "/config/m300_front_stereo_param.yaml";
+
   /**
    * Step: 2 create the camera instances
    * */
-  // NOTE: the siglonten sould be called in StereoCamOperator...
+  M210_STEREO::Config::setParamFile(m300_stereo_config_path);
   cv::Mat param_proj_left =
       M210_STEREO::Config::get<cv::Mat>("leftProjectionMatrix");
   cv::Mat param_proj_right =
@@ -73,18 +76,18 @@ FFDS::MODULES::PoseCalculator::PoseCalculator() {
   // create frontend
   frontend_ = stereo_camera_vo::module::Frontend::Ptr(
       new stereo_camera_vo::module::Frontend(camera_left_, camera_right_,
-                                             frontend_param, true));
+                                             frontend_param, false));
 
   PRINT_INFO("get frontend_config params from %s",
              frontend_config_path.c_str());
 }
 
-Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
-                                                 const cv::Mat& right_img,
-                                                 const Sophus::SE3d pose_Tcw) {
+bool FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
+                                         const cv::Mat& right_img,
+                                         Sophus::SE3d* pose_Tcw) {
   if (left_img.empty() || right_img.empty()) {
     PRINT_WARN("no valid stereo images right now!");
-    return Sophus::SE3d();
+    return false;
   }
 
   auto new_frame = stereo_camera_vo::common::Frame::CreateFrame();
@@ -92,8 +95,10 @@ Sophus::SE3d FFDS::MODULES::PoseCalculator::Step(const cv::Mat& left_img,
   new_frame->right_img_ = right_img;
 
   new_frame->use_init_pose_ = true;
-  new_frame->SetPose(pose_Tcw);
-
+  new_frame->SetPose(*pose_Tcw);
   frontend_->AddFrame(new_frame);
-  return new_frame->Pose();
+
+  *pose_Tcw = new_frame->Pose();
+
+  return true;
 }
