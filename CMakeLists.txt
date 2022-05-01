@@ -109,6 +109,45 @@ set(
   stereo_camera_vo_tool
 )
 
+# octomap
+find_package(octomap REQUIRED)
+include_directories(${OCTOMAP_INCLUDE_DIRS})
+#
+# opml
+find_package(ompl REQUIRED)
+include_directories(${OMPL_INCLUDE_DIRS})
+message("${OMPL_LIBRARIES}")
+
+# fcl
+find_package(fcl QUIET)
+if (fcl_FOUND)
+  # convert cmake target to variables for catkin_package DEPENDS
+  if(TARGET ${FCL_LIBRARIES})
+    get_target_property(LIBFCL_LOCATION ${FCL_LIBRARIES} LOCATION)
+    get_target_property(LIBFCL_INTERFACE_LINK_LIBRARIES ${FCL_LIBRARIES} INTERFACE_LINK_LIBRARIES)
+    get_target_property(LIBFCL_INCLUDE_DIRS ${FCL_LIBRARIES} INTERFACE_INCLUDE_DIRECTORIES)
+    set(LIBFCL_LIBRARIES ${LIBFCL_LOCATION} ${LIBFCL_INTERFACE_LINK_LIBRARIES})
+  else()
+    set(LIBFCL_LIBRARIES ${FCL_LIBRARIES})
+    set(LIBFCL_INCLUDE_DIRS ${FCL_INCLUDE_DIRS})
+  endif()
+else()
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBFCL_PC REQUIRED fcl)
+  set(LIBFCL_INCLUDE_DIRS ${LIBFCL_PC_INCLUDE_DIRS})
+  # find *absolute* paths to LIBFCL_LIBRARIES
+  set(LIBFCL_LIBRARIES)
+  foreach(_lib ${LIBFCL_PC_LIBRARIES})
+    find_library(_lib_${_lib} ${_lib} HINTS ${LIBFCL_PC_LIBRARY_DIRS})
+    list(APPEND LIBFCL_LIBRARIES ${_lib_${_lib}})
+  endforeach()
+endif()
+
+set (PATH_PLAN_THIRD_PARTY_LIBS
+    ${OMPL_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+    ${LIBFCL_LIBRARIES})
+
 
 add_message_files(
   FILES
