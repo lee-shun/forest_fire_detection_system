@@ -29,6 +29,8 @@
 #include "fcl/broadphase/broadphase.h"
 #include "fcl/math/transform.h"
 
+#include "tools/PrintControl/PrintCtrlMacro.h"
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -62,7 +64,7 @@ class planner {
   planner(void) {
     // 四旋翼的障碍物几何形状
     Quadcopter =
-        std::shared_ptr<fcl::CollisionGeometry>(new fcl::Box(0.8, 0.8, 0.3));
+        std::shared_ptr<fcl::CollisionGeometry>(new fcl::Box(3, 3, 3));
     // 分辨率参数设置
     fcl::OcTree *tree = new fcl::OcTree(
         std::shared_ptr<const octomap::OcTree>(new octomap::OcTree(0.15)));
@@ -116,10 +118,14 @@ class planner {
 
     std::cout << "Initialized: " << std::endl;
   }
+
   // Destructor
   ~planner() {}
+
   void replan(void) {
+    PRINT_DEBUG("before total points!");
     std::cout << "Total Points:" << path_smooth->getStateCount() << std::endl;
+    PRINT_DEBUG("after total points!");
     if (path_smooth->getStateCount() <= 2) {
       plan();
     } else {
@@ -135,6 +141,7 @@ class planner {
         std::cout << "Replanning not required" << std::endl;
     }
   }
+
   void plan(void) {
     // create a planner for the defined space
     og::InformedRRTstar *rrt = new og::InformedRRTstar(si);
@@ -204,6 +211,7 @@ class planner {
 
         msg.poses.push_back(pose);
       }
+
       traj_pub.publish(msg);
 
       // Path smoothing using bspline
@@ -347,8 +355,12 @@ void octomapCallback(const octomap_msgs::Octomap::ConstPtr &msg,
   fcl::OcTree *tree =
       new fcl::OcTree(std::shared_ptr<const octomap::OcTree>(tree_oct));
 
+  PRINT_DEBUG("after tree otc!");
+
   // Update the octree used for collision checking
   planner_ptr->updateMap(std::shared_ptr<fcl::CollisionGeometry>(tree));
+  PRINT_DEBUG("after update map!");
+
   planner_ptr->replan();
 }
 
@@ -373,22 +385,27 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
   planner planner_object;
 
+  vis_pub = n.advertise<nav_msgs::Path>("visualization_marker", 0);
+  // traj_pub =
+  // n.advertise<trajectory_msgs::MultiDOFJointTrajectory>("waypoints",1);
+  traj_pub = n.advertise<nav_msgs::Path>("waypoints", 1);
+
+  planner_object.setStart(0, 0, 0);
+  planner_object.setGoal(20, -5, 0);
+  planner_object.plan();
+
   ros::Subscriber octree_sub = n.subscribe<octomap_msgs::Octomap>(
       "/octomap_binary", 1, boost::bind(&octomapCallback, _1, &planner_object));
   // ros::Subscriber odom_sub =
   // n.subscribe<nav_msgs::Odometry>("/rovio/odometry", 1, boost::bind(&odomCb,
   // _1, &planner_object));
-  ros::Subscriber goal_sub = n.subscribe<geometry_msgs::PointStamped>(
-      "/goal/clicked_point", 1, boost::bind(&goalCb, _1, &planner_object));
-  ros::Subscriber start_sub = n.subscribe<geometry_msgs::PointStamped>(
-      "/start/clicked_point", 1, boost::bind(&startCb, _1, &planner_object));
+  // ros::Subscriber goal_sub = n.subscribe<geometry_msgs::PointStamped>(
+  //     "/goal/clicked_point", 1, boost::bind(&goalCb, _1, &planner_object));
+  // ros::Subscriber start_sub = n.subscribe<geometry_msgs::PointStamped>(
+  //     "/start/clicked_point", 1, boost::bind(&startCb, _1, &planner_object));
 
   // is_pub = n.advertise<visualization_msgs::Marker>(
   // "visualization_marker", 0 );
-  vis_pub = n.advertise<nav_msgs::Path>("visualization_marker", 0);
-  // traj_pub =
-  // n.advertise<trajectory_msgs::MultiDOFJointTrajectory>("waypoints",1);
-  traj_pub = n.advertise<nav_msgs::Path>("waypoints", 1);
 
   std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
 
