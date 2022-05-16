@@ -1,15 +1,9 @@
 <launch>
     <node name="toggle_vechile_video_node"
-    pkg="forest_fire_detection_system"
-    type="ToggleVehicleVideo"
-    args="open"
-    respawn="false"
-    output="screen"></node>
-
+    pkg="forest_fire_detection_system" type="ToggleVehicleVideo"
+    args="open" respawn="false" output="screen"></node>
     <node name="heat_ir_threshold_locater_node"
     pkg="forest_fire_detection_system"
-    type="heat_ir_threshold_locater.py"
-    args=""
-    respawn="false"
+    type="heat_ir_threshold_locater.py" args="" respawn="false"
     output="screen"></node>
 </launch>

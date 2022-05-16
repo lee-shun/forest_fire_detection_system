@@ -33,15 +33,23 @@ class CVdataset(Dataset):
         self.imgs = os.listdir(img_dir)
         self.masks = os.listdir(mask_dir)
   
-    def __len__(self):        
+    def __len__(self):     
         return len(self.imgs)
+        
 
     def __getitem__(self, index):
         img_path = os.path.join(self.img_dir, self.imgs[index])
-        mask_path = os.path.join(self.mask_dir, 'label_' + self.imgs[index])
+        mask_path = os.path.join(self.mask_dir, 'Label_' + self.imgs[index])
         img_np = cv2.imread(img_path)
+        # print(img_np.shape)
+        # convert to original image channels, because cv2.imread may change it
+        img_np = img_np[..., ::-1] 
         mask_np = cv2.imread(mask_path, cv2.COLOR_BGR2GRAY)
-        mask_np[mask_np > 0.0] = 1.0
+        # mask_np = mask_np[..., ::-1]
+        # print(f'mask_np.shape: {mask_np.shape}')
+        
+        # there are multiple classes for segmentation, then no need 
+        # mask_np[mask_np > 0.0] = 1.0
 
         if self.transform:           
             augmentations = self.transform(image = img_np, mask = mask_np)
@@ -50,10 +58,21 @@ class CVdataset(Dataset):
         return img_tensor, mask_tensor
 
 if __name__ == '__main__':
-    Img_dir = ('datasets/S_kaggle_wildfire')
-    Mask_dir = ('datasets/S_kaggle_wildfire_label')
+    Img_dir = ('datasets/S_google_wildfire')
+    Mask_dir = ('datasets/S_google_wildfire_label')
     data = CVdataset(img_dir=Img_dir, mask_dir = Mask_dir, transform = Atransform)
-    
+
+    # split into train dataset and validation dataset
+    dataset_size = len(data)
+    print(f"Total number of images: {dataset_size}")
+    valid_split = 0.2
+    valid_size = int(valid_split*dataset_size)
+    indices = torch.randperm(len(data)).tolist()
+    train_data = Subset(data, indices[:-valid_size])
+    val_data = Subset(data, indices[-valid_size:])
+    print(f"Total training images: {len(train_data)}")
+    print(f"Total valid_images: {len(val_data)}")
+
     batch_size = 1
     counter = 0
     data_loader = DataLoader(data, batch_size = batch_size, 
@@ -71,13 +90,4 @@ if __name__ == '__main__':
     ax[1].imshow(mask_tensor.squeeze(0))
     plt.show()
 
-    # split into train dataset and validation dataset
-    dataset_size = len(data)
-    print(f"Total number of images: {dataset_size}")
-    valid_split = 0.2
-    valid_size = int(valid_split*dataset_size)
-    indices = torch.randperm(len(data)).tolist()
-    train_data = Subset(data, indices[:-valid_size])
-    val_data = Subset(data, indices[-valid_size:])
-    print(f"Total training images: {len(train_data)}")
-    print(f"Total valid_images: {len(val_data)}")
+

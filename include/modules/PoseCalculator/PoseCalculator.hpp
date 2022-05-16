@@ -37,8 +37,14 @@ class PoseCalculator {
  public:
   PoseCalculator();
 
-  Sophus::SE3d Step(const cv::Mat& left_img, const cv::Mat& right_img,
-                    const Sophus::SE3d pose_Tcw);
+  bool Stop() {
+    if (nullptr != frontend_) frontend_->Stop();
+    PRINT_INFO("stop pose calculator!");
+    return true;
+  }
+
+  bool Step(const cv::Mat& left_img, const cv::Mat& right_img,
+            Sophus::SE3d* pose_Tcw);
 
   static Sophus::SE3d Twb2Twc(const Sophus::SE3d& Twb) {
     Eigen::Quaterniond rotate_quat_bc;
