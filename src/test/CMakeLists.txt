@@ -23,6 +23,7 @@ foreach(EACH_SRC ${SRC_LIST})
   # generate the library
 
   add_executable(${EACH_EXE} ${EACH_SRC})
+
   target_link_libraries(
     ${EACH_EXE}
     ${catkin_LIBRARIES}
