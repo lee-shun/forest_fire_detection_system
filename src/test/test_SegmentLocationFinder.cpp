@@ -14,6 +14,7 @@
  *******************************************************************************/
 
 #include "modules/DepthEstimator/SegmentLocationFinder.hpp"
+
 int main(int argc, char** argv) {
   cv::Mat srcImg = cv::imread("haha.jpg");
   cv::Mat redChannel;
