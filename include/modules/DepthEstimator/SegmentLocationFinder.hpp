@@ -112,8 +112,6 @@ class SegmentLocationFinder {
 
     return center_of_contours;
   }
-
-  void DrawRect(cv::Mat binary_img) {}
 };
 }  // namespace MODULES
 }  // namespace FFDS
