@@ -134,6 +134,7 @@ int main(int argc, char** argv) {
       nh.advertiseService("/grab_data_depth_estimation", GrabService);
   PRINT_INFO("ready for grabbing data for depth estimation!");
 
-  ros::spin();
+  ros::MultiThreadedSpinner spinner(2);
+  spinner.spin();
   return 0;
 }
