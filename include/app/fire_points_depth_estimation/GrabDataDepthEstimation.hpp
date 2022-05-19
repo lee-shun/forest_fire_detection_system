@@ -26,7 +26,7 @@
 
 namespace FFDS {
 namespace APP {
-class GrabDataDepthEstimation {
+class GrabDataDepthEstimationManager {
  public:
   void run(float desired_height);
 

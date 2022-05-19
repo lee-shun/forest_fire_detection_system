@@ -23,7 +23,7 @@
 
 #include <opencv2/imgcodecs.hpp>
 
-void FFDS::APP::GrabDataDepthEstimation::Grab() {
+void FFDS::APP::GrabDataDepthEstimationManager::Grab() {
   // STEP: set local reference position
   ros::ServiceClient set_local_pos_ref_client_;
   set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
@@ -93,7 +93,7 @@ void FFDS::APP::GrabDataDepthEstimation::Grab() {
   }
 }
 
-bool FFDS::APP::GrabDataDepthEstimation::MoveByPosOffset(
+bool FFDS::APP::GrabDataDepthEstimationManager::MoveByPosOffset(
     dji_osdk_ros::FlightTaskControl &task,
     const dji_osdk_ros::JoystickCommand &offsetDesired, float posThresholdInM,
     float yawThresholdInDeg) {
@@ -111,7 +111,7 @@ bool FFDS::APP::GrabDataDepthEstimation::MoveByPosOffset(
 }
 
 std::vector<dji_osdk_ros::JoystickCommand>
-FFDS::APP::GrabDataDepthEstimation::GenerateOffsetCommands() {
+FFDS::APP::GrabDataDepthEstimationManager::GenerateOffsetCommands() {
   dji_osdk_ros::JoystickCommand command;
   std::vector<dji_osdk_ros::JoystickCommand> ctrl_vec;
 
@@ -125,7 +125,7 @@ FFDS::APP::GrabDataDepthEstimation::GenerateOffsetCommands() {
   return ctrl_vec;
 }
 
-void FFDS::APP::GrabDataDepthEstimation::run(float desired_height) {
+void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
   auto command_vec = GenerateOffsetCommands();
   ROS_INFO_STREAM("Command generating finish, are you ready to take off? y/n");
 
@@ -161,7 +161,7 @@ void FFDS::APP::GrabDataDepthEstimation::run(float desired_height) {
       /* 3. Move following the offset */
       ROS_INFO_STREAM("Move by position offset request sending ...");
       for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
-        std::thread t(std::bind(&GrabDataDepthEstimation::Grab, this));
+        std::thread t(std::bind(&GrabDataDepthEstimationManager::Grab, this));
         ros::Duration(2.0).sleep();
         ROS_INFO_STREAM("Moving to the point: " << i << "!");
         MoveByPosOffset(control_task, command_vec[i], 0.8, 1);
@@ -197,6 +197,7 @@ void FFDS::APP::GrabDataDepthEstimation::run(float desired_height) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "grab_data_depth_estimation_node");
   ros::NodeHandle nh;
-
+  FFDS::APP::GrabDataDepthEstimationManager recorder;
+  recorder.run(9);
   return 0;
 }
