@@ -31,7 +31,7 @@ class GrabDataDepthEstimationManager {
   void run(float desired_height);
 
  private:
-  void Grab();
+  void Grab(int save_num);
   bool MoveByPosOffset(dji_osdk_ros::FlightTaskControl &task,
                        const dji_osdk_ros::JoystickCommand &offsetDesired,
                        float posThresholdInM, float yawThresholdInDeg);

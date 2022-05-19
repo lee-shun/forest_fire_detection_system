@@ -23,7 +23,7 @@
 
 #include <opencv2/imgcodecs.hpp>
 
-void FFDS::APP::GrabDataDepthEstimationManager::Grab() {
+void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
   // STEP: set local reference position
   ros::ServiceClient set_local_pos_ref_client_;
   set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
@@ -39,7 +39,8 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab() {
 
   // STEP: New directorys
   std::string home = std::getenv("HOME");
-  std::string save_path = home + "/m300_grabbed_data";
+  std::string save_path =
+      home + "/m300_grabbed_data_" + std::to_string(save_num);
   FFDS::TOOLS::shellRm(save_path);
 
   FFDS::TOOLS::shellMkdir(save_path);
@@ -161,7 +162,8 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
       /* 3. Move following the offset */
       ROS_INFO_STREAM("Move by position offset request sending ...");
       for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
-        std::thread t(std::bind(&GrabDataDepthEstimationManager::Grab, this));
+        std::thread t(
+            std::bind(&GrabDataDepthEstimationManager::Grab, this, i));
         ros::Duration(2.0).sleep();
         ROS_INFO_STREAM("Moving to the point: " << i << "!");
         MoveByPosOffset(control_task, command_vec[i], 0.8, 1);
