@@ -1,0 +1,6 @@
+# toggle the GrabData
+bool start
+
+---
+bool result
+

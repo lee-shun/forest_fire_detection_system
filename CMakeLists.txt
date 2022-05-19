@@ -159,6 +159,7 @@ add_message_files(
 add_service_files(
   FILES
   SegmentSmoke.srv
+  ToggleGrabDataDepthEstimation.srv
 )
 
 generate_messages(
