@@ -22,6 +22,17 @@
 #include <thread>
 
 #include <opencv2/imgcodecs.hpp>
+FFDS::APP::GrabDataDepthEstimationManager::GrabDataDepthEstimationManager() {
+  task_control_client = nh_.serviceClient<dji_osdk_ros::FlightTaskControl>(
+      "/flight_task_control");
+
+  set_joystick_mode_client =
+      nh_.serviceClient<dji_osdk_ros::SetJoystickMode>("set_joystick_mode");
+
+  obtain_ctrl_authority_client =
+      nh_.serviceClient<dji_osdk_ros::ObtainControlAuthority>(
+          "obtain_release_control_authority");
+}
 
 void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
   // STEP: set local reference position

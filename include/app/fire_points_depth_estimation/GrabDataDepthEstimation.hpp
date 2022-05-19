@@ -16,10 +16,10 @@
 #ifndef INCLUDE_APP_FIRE_POINTS_DEPTH_ESTIMATION_GRABDATADEPTHESTIMATION_HPP_
 #define INCLUDE_APP_FIRE_POINTS_DEPTH_ESTIMATION_GRABDATADEPTHESTIMATION_HPP_
 
-
-#include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/common_type.h>
+#include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/FlightTaskControl.h>
+#include <dji_osdk_ros/SetJoystickMode.h>
 
 #include <vector>
 #include <ros/ros.h>
@@ -28,6 +28,7 @@ namespace FFDS {
 namespace APP {
 class GrabDataDepthEstimationManager {
  public:
+  GrabDataDepthEstimationManager();
   void run(float desired_height);
 
  private:
