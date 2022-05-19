@@ -13,23 +13,20 @@
  *
  *******************************************************************************/
 
+#include "app/fire_points_depth_estimation/GrabDataDepthEstimation.hpp"
 #include "modules/H20TIMUPoseGrabber/H20TIMUPoseGrabber.hpp"
 #include "tools/PrintControl/FileWritter.hpp"
 #include "tools/PrintControl/PrintCtrlMacro.h"
 #include "tools/SystemLib.hpp"
 
-#include <forest_fire_detection_system/ToggleGrabDataDepthEstimation.h>
-#include <ros/ros.h>
-
-#include <opencv2/imgcodecs.hpp>
 #include <thread>
 
-void Grab() {
-  // STEP: set local reference position
-  ros::NodeHandle nh;
+#include <opencv2/imgcodecs.hpp>
 
+void FFDS::APP::GrabDataDepthEstimation::Grab() {
+  // STEP: set local reference position
   ros::ServiceClient set_local_pos_ref_client_;
-  set_local_pos_ref_client_ = nh.serviceClient<dji_osdk_ros::SetLocalPosRef>(
+  set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
       "/set_local_pos_reference");
   dji_osdk_ros::SetLocalPosRef set_local_pos_reference;
   set_local_pos_ref_client_.call(set_local_pos_reference);
@@ -96,45 +93,110 @@ void Grab() {
   }
 }
 
-bool GrabService(
-    forest_fire_detection_system::ToggleGrabDataDepthEstimation::Request& req,
-    forest_fire_detection_system::ToggleGrabDataDepthEstimation::Response&
-        res) {
-  std::thread grab_thread;
+bool FFDS::APP::GrabDataDepthEstimation::MoveByPosOffset(
+    dji_osdk_ros::FlightTaskControl &task,
+    const dji_osdk_ros::JoystickCommand &offsetDesired, float posThresholdInM,
+    float yawThresholdInDeg) {
+  task.request.task =
+      dji_osdk_ros::FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL;
+  task.request.joystickCommand.x = offsetDesired.x;
+  task.request.joystickCommand.y = offsetDesired.y;
+  task.request.joystickCommand.z = offsetDesired.z;
+  task.request.joystickCommand.yaw = offsetDesired.yaw;
+  task.request.posThresholdInM = posThresholdInM;
+  task.request.yawThresholdInDeg = yawThresholdInDeg;
 
-  if (req.start) {
-    if (grab_thread.joinable()) {
-      PRINT_WARN("already in grabbing!");
-      res.result = false;
-    } else {
-      grab_thread = std::thread(Grab);
-      PRINT_INFO("start grabbing data for depth estimation!");
-      res.result = true;
-    }
-  } else {
-    if (grab_thread.joinable()) {
-      grab_thread.join();
-      PRINT_INFO("stop grabbing data for depth estimation!");
-      res.result = true;
-    } else {
-      PRINT_WARN("not in grabbing! No need to join!");
-      res.result = false;
-    }
-  }
-
-  return true;
+  task_control_client.call(task);
+  return task.response.result;
 }
 
-int main(int argc, char** argv) {
+std::vector<dji_osdk_ros::JoystickCommand>
+FFDS::APP::GrabDataDepthEstimation::GenerateOffsetCommands() {
+  dji_osdk_ros::JoystickCommand command;
+  std::vector<dji_osdk_ros::JoystickCommand> ctrl_vec;
+
+  command.x = 0.0;
+  command.y = 10.0;
+  command.z = 0.0;
+  command.yaw = 0;
+
+  ctrl_vec.push_back(command);
+
+  return ctrl_vec;
+}
+
+void FFDS::APP::GrabDataDepthEstimation::run(float desired_height) {
+  auto command_vec = GenerateOffsetCommands();
+  ROS_INFO_STREAM("Command generating finish, are you ready to take off? y/n");
+
+  char inputChar;
+  std::cin >> inputChar;
+
+  if (inputChar == 'n') {
+    ROS_INFO_STREAM("exist!");
+    return;
+  } else {
+    /* 0. Obtain the control authority */
+    ROS_INFO_STREAM("Obtain the control authority ...");
+    obtainCtrlAuthority.request.enable_obtain = true;
+    obtain_ctrl_authority_client.call(obtainCtrlAuthority);
+
+    /* 1. Take off */
+    ROS_INFO_STREAM("Takeoff request sending ...");
+    control_task.request.task =
+        dji_osdk_ros::FlightTaskControl::Request::TASK_TAKEOFF;
+    task_control_client.call(control_task);
+
+    if (control_task.response.result == false) {
+      ROS_ERROR_STREAM("Takeoff task failed!");
+    } else {
+      ROS_INFO_STREAM("Takeoff task successful!");
+      ros::Duration(2.0).sleep();
+
+      /* 2. Move to a higher attitude */
+      ROS_INFO_STREAM("Moving to a higher attitude! desired_height offset: "
+                      << desired_height << " m!");
+      MoveByPosOffset(control_task, {0.0, 0.0, desired_height, 0.0}, 0.8, 1);
+
+      /* 3. Move following the offset */
+      ROS_INFO_STREAM("Move by position offset request sending ...");
+      for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
+        std::thread t(std::bind(&GrabDataDepthEstimation::Grab, this));
+        ros::Duration(2.0).sleep();
+        ROS_INFO_STREAM("Moving to the point: " << i << "!");
+        MoveByPosOffset(control_task, command_vec[i], 0.8, 1);
+        t.join();
+      }
+
+      /* 4. Go home */
+      ROS_INFO_STREAM("going home now");
+      control_task.request.task =
+          dji_osdk_ros::FlightTaskControl::Request::TASK_GOHOME;
+      task_control_client.call(control_task);
+      if (control_task.response.result == true) {
+        ROS_INFO_STREAM("GO home successful");
+      } else {
+        ROS_INFO_STREAM("Go home failed.");
+      }
+
+      /* 5. Landing */
+      control_task.request.task =
+          dji_osdk_ros::FlightTaskControl::Request::TASK_LAND;
+      ROS_INFO_STREAM(
+          "Landing request sending ... need your confirmation on the remoter!");
+      task_control_client.call(control_task);
+      if (control_task.response.result == true) {
+        ROS_INFO_STREAM("Land task successful");
+      } else {
+        ROS_INFO_STREAM("Land task failed.");
+      }
+    }
+  }
+}
+
+int main(int argc, char **argv) {
   ros::init(argc, argv, "grab_data_depth_estimation_node");
   ros::NodeHandle nh;
 
-  // STEP: provide the record service
-  ros::ServiceServer service =
-      nh.advertiseService("/grab_data_depth_estimation", GrabService);
-  PRINT_INFO("ready for grabbing data for depth estimation!");
-
-  ros::MultiThreadedSpinner spinner(2);
-  spinner.spin();
   return 0;
 }
