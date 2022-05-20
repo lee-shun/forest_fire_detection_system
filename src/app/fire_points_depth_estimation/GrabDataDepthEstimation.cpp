@@ -80,7 +80,10 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
 
   int index = 0;
   while (ros::ok()) {
-    grabber.UpdateOnce();
+    if (FFDS::MODULES::H20TIMUPoseGrabber::MessageFilterStatus::EMPTY ==
+        grabber.UpdateOnce())
+      continue;
+
     ros::Time time = ros::Time::now();
     time_writter.write(index, time.sec, time.nsec);
 
@@ -178,7 +181,7 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
         ros::Duration(2.0).sleep();
         ROS_INFO_STREAM("Moving to the point: " << i << "!");
         MoveByPosOffset(control_task, command_vec[i], 0.8, 1);
-        t.join();
+        t.detach();
       }
 
       /* 4. Go home */
