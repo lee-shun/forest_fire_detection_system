@@ -79,7 +79,7 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
   FFDS::MODULES::H20TIMUPoseGrabber grabber;
 
   int index = 0;
-  while (ros::ok()) {
+  while (ros::ok() && grab_run_.load()) {
     if (FFDS::MODULES::H20TIMUPoseGrabber::MessageFilterStatus::EMPTY ==
         grabber.UpdateOnce())
       continue;
@@ -176,12 +176,14 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
       /* 3. Move following the offset */
       ROS_INFO_STREAM("Move by position offset request sending ...");
       for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
+        grab_run_.store(true);
         std::thread t(
             std::bind(&GrabDataDepthEstimationManager::Grab, this, i));
         ros::Duration(2.0).sleep();
         ROS_INFO_STREAM("Moving to the point: " << i << "!");
         MoveByPosOffset(control_task, command_vec[i], 0.8, 1);
-        t.detach();
+        grab_run_.store(false);
+        t.join();
       }
 
       /* 4. Go home */

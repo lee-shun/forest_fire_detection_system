@@ -47,6 +47,8 @@ class GrabDataDepthEstimationManager {
 
   dji_osdk_ros::FlightTaskControl control_task;
   dji_osdk_ros::ObtainControlAuthority obtainCtrlAuthority;
+
+  std::atomic<bool> grab_run_;
 };
 }  // namespace APP
 }  // namespace FFDS
