@@ -173,6 +173,12 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
                       << desired_height << " m!");
       MoveByPosOffset(control_task, {0.0, 0.0, desired_height, 0.0}, 0.8, 1);
 
+      // STEP: use laszer range finder
+      ROS_INFO_STREAM(
+          "Use the laszer range finder to measure the distance! distance: ");
+      float laszer_distance = 0;
+      std::cin >> laszer_distance;
+
       /* 3. Move following the offset */
       ROS_INFO_STREAM("Move by position offset request sending ...");
       for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
