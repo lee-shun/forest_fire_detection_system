@@ -103,7 +103,7 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
     att_writter.write(index, att.quaternion.w, att.quaternion.x,
                       att.quaternion.y, att.quaternion.z);
 
-    ros::Rate(10).sleep();
+    ros::Rate(20).sleep();
     ++index;
   }
 }
@@ -126,12 +126,13 @@ bool FFDS::APP::GrabDataDepthEstimationManager::MoveByPosOffset(
 }
 
 std::vector<dji_osdk_ros::JoystickCommand>
-FFDS::APP::GrabDataDepthEstimationManager::GenerateOffsetCommands() {
+FFDS::APP::GrabDataDepthEstimationManager::GenerateOffsetCommands(
+    const float y) {
   dji_osdk_ros::JoystickCommand command;
   std::vector<dji_osdk_ros::JoystickCommand> ctrl_vec;
 
   command.x = 0.0;
-  command.y = 10.0;
+  command.y = y;
   command.z = 0.0;
   command.yaw = 0;
 
@@ -140,8 +141,9 @@ FFDS::APP::GrabDataDepthEstimationManager::GenerateOffsetCommands() {
   return ctrl_vec;
 }
 
-void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
-  auto command_vec = GenerateOffsetCommands();
+void FFDS::APP::GrabDataDepthEstimationManager::run(
+    const float desired_height, const float desired_length) {
+  auto command_vec = GenerateOffsetCommands(desired_length);
   ROS_INFO_STREAM("Command generating finish, are you ready to take off? y/n");
 
   char inputChar;
@@ -168,18 +170,18 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
       ROS_INFO_STREAM("Takeoff task successful!");
       ros::Duration(2.0).sleep();
 
-      /* 2. Move to a higher attitude */
+      /* STEP: Move to a higher attitude */
       ROS_INFO_STREAM("Moving to a higher attitude! desired_height offset: "
                       << desired_height << " m!");
       MoveByPosOffset(control_task, {0.0, 0.0, desired_height, 0.0}, 0.8, 1);
 
-      // STEP: use laszer range finder
+      // STEP: Use laszer range finder
       ROS_INFO_STREAM(
           "Use the laszer range finder to measure the distance! distance: ");
       float laszer_distance = 0;
       std::cin >> laszer_distance;
 
-      /* 3. Move following the offset */
+      /* STEP: Move following the offset */
       ROS_INFO_STREAM("Move by position offset request sending ...");
       for (int i = 0; ros::ok() && (i < command_vec.size()); ++i) {
         grab_run_.store(true);
@@ -221,7 +223,21 @@ void FFDS::APP::GrabDataDepthEstimationManager::run(float desired_height) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "grab_data_depth_estimation_node");
   ros::NodeHandle nh;
-  FFDS::APP::GrabDataDepthEstimationManager recorder;
-  recorder.run(9);
+
+  if (argc != 4) {
+    ROS_ERROR_STREAM(
+        "usage: mode(0 auto, 1 manual) desired_height desired_length");
+    return 1;
+  } else {
+    FFDS ::APP::GrabDataDepthEstimationManager recorder;
+    if (std::stof(argv[1]) == 0) {
+      recorder.run(std::stof(argv[2]), std::stof(argv[3]));
+    } else if (std::stof(argv[1]) == 1) {
+      recorder.Grab(1);
+    } else {
+      PRINT_ERROR("mode is error! 0 auto, 1 manual!");
+    }
+  }
+
   return 0;
 }

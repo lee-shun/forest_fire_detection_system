@@ -29,15 +29,16 @@ namespace APP {
 class GrabDataDepthEstimationManager {
  public:
   GrabDataDepthEstimationManager();
-  void run(float desired_height);
+  void run(const float desired_height, const float desired_length);
+  void Grab(int save_num);
 
  private:
-  void Grab(int save_num);
   bool MoveByPosOffset(dji_osdk_ros::FlightTaskControl &task,
                        const dji_osdk_ros::JoystickCommand &offsetDesired,
                        float posThresholdInM, float yawThresholdInDeg);
 
-  std::vector<dji_osdk_ros::JoystickCommand> GenerateOffsetCommands();
+  std::vector<dji_osdk_ros::JoystickCommand> GenerateOffsetCommands(
+      const float y);
 
   ros::NodeHandle nh_;
 
