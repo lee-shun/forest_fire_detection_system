@@ -28,9 +28,7 @@ namespace FFDS {
 namespace APP {
 class GrabDataDepthEstimationManager {
  public:
-  GrabDataDepthEstimationManager() {
-    grab_run_.store(true);
-  };
+  GrabDataDepthEstimationManager();
   void run(const float desired_height, const float desired_length);
   void Grab(int save_num);
 

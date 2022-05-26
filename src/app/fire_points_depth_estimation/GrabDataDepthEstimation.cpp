@@ -32,6 +32,9 @@ FFDS::APP::GrabDataDepthEstimationManager::GrabDataDepthEstimationManager() {
   obtain_ctrl_authority_client =
       nh_.serviceClient<dji_osdk_ros::ObtainControlAuthority>(
           "obtain_release_control_authority");
+
+  // for manual mode
+    grab_run_.store(true);
 }
 
 void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
