@@ -27,37 +27,40 @@ class DepthFilter {
  public:
   struct Param {
     // min value to judje depth is converaged.
-    const double min_cov{0.1};
+    double min_cov{0.1};
 
     // max value to judje depth is divergent.
-    const double max_cov{10.0};
+    double max_cov{10.0};
 
     // estimate the depth around given point in a depth_win_size square.
-    const int half_depth_win_size{10};
+    int half_depth_win_size{10};
 
     // the border of an image
-    const int boarder{0};
+    int boarder{0};
 
     // image width
-    const int width{960};
+    int width{960};
 
     // image height
-    const int height{770};
+    int height{770};
 
-    const double fx{481.2f};
-    const double fy{-480.0f};
-    const double cx{319.5f};
-    const double cy{239.5f};
+    double fx{2079.73910150907f};
+    double fy{2080.01151697192f};
+    double cx{466.470046230910f};
+    double cy{394.022978676365f};
 
-    const int ncc_win_size{5};
-    const int ncc_area{(2 * ncc_win_size + 1) * (2 * ncc_win_size + 1)};
+    int ncc_win_size{5};
+    int ncc_area{(2 * ncc_win_size + 1) * (2 * ncc_win_size + 1)};
   };
+
   /**
    * update the pt_ref point depth
    * */
   bool UpdateDepth(const cv::Mat &ref, const cv::Mat &curr,
                    const Sophus::SE3d &T_C_R, const Eigen::Vector2d pt_ref,
                    cv::Mat &depth, cv::Mat &depth_cov2);
+
+  void setParam(const Param param_in) { param = param_in; }
 
  private:
   /**
@@ -104,7 +107,7 @@ class DepthFilter {
   }
 
   inline double BilinearInterpolated(const cv::Mat &img,
-                                             const Eigen::Vector2d &pt) {
+                                     const Eigen::Vector2d &pt) {
     uchar *d = &img.data[static_cast<int>(pt(1, 0)) * img.step +
                          static_cast<int>(pt(0, 0))];
     double xx = pt(0, 0) - floor(pt(0, 0));
