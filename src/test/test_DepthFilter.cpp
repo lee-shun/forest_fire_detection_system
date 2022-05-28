@@ -80,17 +80,23 @@ int main(int argc, char** argv) {
   // read updates from index(image name: 1)
   for (int i = 1; i < 100; ++i) {
     cv::Mat cur_img =
-        cv::imread(dataset_path + "/" + std::to_string(i) + ".png", 0);
+        cv::imread(img_path + "/" + std::to_string(i) + ".png", 0);
     Eigen::Vector3d cur_trans;
     if (!ReadTranslation(translation_path, i, &cur_trans)) return 1;
 
     Eigen::Vector3d trans = cur_trans - ref_trans;
     Sophus::SE3d TCR(Eigen::Matrix3d::Identity(), trans);
 
+    if (ref_img.empty() || cur_img.empty()) {
+      PRINT_ERROR("image index: %d is Empty!", i);
+      return 1;
+    }
+
     filter.UpdateDepth(ref_img, cur_img, TCR, ref_point, depth, depth_cov2);
   }
 
   // 输出最后的结果
+
 
   return 0;
 }

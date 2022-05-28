@@ -108,6 +108,7 @@ double FFDS::MODULES::DepthFilter::NCC(const cv::Mat &ref, const cv::Mat &curr,
 
   for (int x = -param.ncc_win_size; x <= param.ncc_win_size; x++)
     for (int y = -param.ncc_win_size; y <= param.ncc_win_size; y++) {
+      if (!Inside(Eigen::Vector2d(x+pt_ref(0, 0), y+pt_ref(1, 0)))) continue;
       double value_ref =
           static_cast<double>(ref.ptr<uchar>(static_cast<int>(
               y + pt_ref(1, 0)))[static_cast<int>(x + pt_ref(0, 0))]) /
