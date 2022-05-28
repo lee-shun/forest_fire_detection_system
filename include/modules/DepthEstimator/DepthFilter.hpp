@@ -49,7 +49,7 @@ class DepthFilter {
     double cx{466.470046230910f};
     double cy{394.022978676365f};
 
-    int ncc_win_size{5};
+    int ncc_win_size{10};
     int ncc_area{(2 * ncc_win_size + 1) * (2 * ncc_win_size + 1)};
   };
 
@@ -122,6 +122,15 @@ class DepthFilter {
 
   double NCC(const cv::Mat &ref, const cv::Mat &curr,
              const Eigen::Vector2d &pt_ref, const Eigen::Vector2d &pt_curr);
+
+  void showEpipolarMatch(const cv::Mat &ref, const cv::Mat &curr,
+                         const Eigen::Vector2d &px_ref,
+                         const Eigen::Vector2d &px_curr);
+
+  void showEpipolarLine(const cv::Mat &ref, const cv::Mat &curr,
+                        const Eigen::Vector2d &px_ref,
+                        const Eigen::Vector2d &px_min_curr,
+                        const Eigen::Vector2d &px_max_curr);
 
   Param param;
 };

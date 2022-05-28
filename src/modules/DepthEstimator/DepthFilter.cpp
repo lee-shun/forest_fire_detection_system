@@ -43,6 +43,8 @@ bool FFDS::MODULES::DepthFilter::UpdateDepth(
           sqrt(depth_cov2.ptr<double>(y)[x]), pt_curr, epipolar_direction);
       if (!ret) continue;
 
+      showEpipolarMatch(ref, curr, Eigen::Vector2d(x, y), pt_curr);
+
       // STEP: 3 update the depth
       UpdateDepthFilter(Eigen::Vector2d(x, y), pt_curr, T_C_R,
                         epipolar_direction, depth, depth_cov2);
@@ -78,20 +80,22 @@ bool FFDS::MODULES::DepthFilter::EpipolarSearch(
   double half_length = 0.5 * epipolar_line.norm();
   if (half_length > 100) half_length = 100;
 
+  showEpipolarLine(ref, curr, pt_ref, px_min_curr, px_max_curr);
+
   double best_ncc = -1.0;
   Eigen::Vector2d best_px_curr;
-  for (double l = -half_length; l <= half_length; l += 0.707) {
-    Eigen::Vector2d px_curr = px_mean_curr + l * epipolar_direction;
-
-    if (!Inside(px_curr)) continue;
-
-    double ncc = NCC(ref, curr, pt_ref, px_curr);
-
-    if (ncc > best_ncc) {
-      best_ncc = ncc;
-      best_px_curr = px_curr;
-    }
-  }
+  // for (double l = -half_length; l <= half_length; l += 0.707) {
+  //   Eigen::Vector2d px_curr = px_mean_curr + l * epipolar_direction;
+  //
+  //   if (!Inside(px_curr)) continue;
+  //
+  //   double ncc = NCC(ref, curr, pt_ref, px_curr);
+  //
+  //   if (ncc > best_ncc) {
+  //     best_ncc = ncc;
+  //     best_px_curr = px_curr;
+  //   }
+  // }
 
   if (best_ncc < 0.85f) return false;
 
@@ -108,7 +112,8 @@ double FFDS::MODULES::DepthFilter::NCC(const cv::Mat &ref, const cv::Mat &curr,
 
   for (int x = -param.ncc_win_size; x <= param.ncc_win_size; x++)
     for (int y = -param.ncc_win_size; y <= param.ncc_win_size; y++) {
-      if (!Inside(Eigen::Vector2d(x+pt_ref(0, 0), y+pt_ref(1, 0)))) continue;
+      if (!Inside(Eigen::Vector2d(x + pt_ref(0, 0), y + pt_ref(1, 0))))
+        continue;
       double value_ref =
           static_cast<double>(ref.ptr<uchar>(static_cast<int>(
               y + pt_ref(1, 0)))[static_cast<int>(x + pt_ref(0, 0))]) /
@@ -198,4 +203,43 @@ bool FFDS::MODULES::DepthFilter::UpdateDepthFilter(
       pt_ref(1, 0)))[static_cast<int>(pt_ref(0, 0))] = sigma_fuse2;
 
   return true;
+}
+
+void FFDS::MODULES::DepthFilter::showEpipolarMatch(
+    const cv::Mat &ref, const cv::Mat &curr, const Eigen::Vector2d &px_ref,
+    const Eigen::Vector2d &px_curr) {
+  cv::Mat ref_show, curr_show;
+  cv::cvtColor(ref, ref_show, cv::COLOR_GRAY2BGR);
+  cv::cvtColor(curr, curr_show, cv::COLOR_GRAY2BGR);
+
+  cv::circle(ref_show, cv::Point2f(px_ref(0, 0), px_ref(1, 0)), 5,
+             cv::Scalar(0, 0, 250), 2);
+  cv::circle(curr_show, cv::Point2f(px_curr(0, 0), px_curr(1, 0)), 5,
+             cv::Scalar(0, 0, 250), 2);
+
+  cv::imshow("ref", ref_show);
+  cv::imshow("curr", curr_show);
+  cv::waitKey(1);
+}
+
+void FFDS::MODULES::DepthFilter::showEpipolarLine(
+    const cv::Mat &ref, const cv::Mat &curr, const Eigen::Vector2d &px_ref,
+    const Eigen::Vector2d &px_min_curr, const Eigen::Vector2d &px_max_curr) {
+  cv::Mat ref_show, curr_show;
+  cv::cvtColor(ref, ref_show, cv::COLOR_GRAY2BGR);
+  cv::cvtColor(curr, curr_show, cv::COLOR_GRAY2BGR);
+
+  cv::circle(ref_show, cv::Point2f(px_ref(0, 0), px_ref(1, 0)), 5,
+             cv::Scalar(0, 255, 0), 2);
+  cv::circle(curr_show, cv::Point2f(px_min_curr(0, 0), px_min_curr(1, 0)), 5,
+             cv::Scalar(0, 255, 0), 2);
+  cv::circle(curr_show, cv::Point2f(px_max_curr(0, 0), px_max_curr(1, 0)), 5,
+             cv::Scalar(0, 255, 0), 2);
+  cv::line(curr_show, cv::Point2f(px_min_curr(0, 0), px_min_curr(1, 0)),
+           cv::Point2f(px_max_curr(0, 0), px_max_curr(1, 0)),
+           cv::Scalar(0, 255, 0), 1);
+
+  cv::imshow("ref", ref_show);
+  cv::imshow("curr", curr_show);
+  cv::waitKey(1);
 }

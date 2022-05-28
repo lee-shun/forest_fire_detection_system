@@ -46,8 +46,7 @@ bool ReadTranslation(const std::string filename, const int index,
     return false;
   }
 
-  *trans =
-      Eigen::Vector3d(trans_elements[1], trans_elements[2], trans_elements[3]);
+  (*trans) << trans_elements[1], trans_elements[2], trans_elements[3];
 
   return true;
 }
@@ -71,14 +70,14 @@ int main(int argc, char** argv) {
                      init_cov2);  // 深度图方差
 
   // TODO: 指定ref_point
-  Eigen::Vector2d ref_point(200, 200);
+  Eigen::Vector2d ref_point(707, 386);
 
   // STEP: read the ref translation
   Eigen::Vector3d ref_trans;
   if (!ReadTranslation(translation_path, 1, &ref_trans)) return 1;
 
   // read updates from index(image name: 1)
-  for (int i = 1; i < 100; ++i) {
+  for (int i = 2; i < 3; ++i) {
     cv::Mat cur_img =
         cv::imread(img_path + "/" + std::to_string(i) + ".png", 0);
     Eigen::Vector3d cur_trans;
@@ -96,7 +95,8 @@ int main(int argc, char** argv) {
   }
 
   // 输出最后的结果
-
-
+    cv::imshow("depth_estimation", depth * 0.2);
+    cv::waitKey(0);
+    PRINT_INFO("depth: %f", depth.ptr<double>(200)[200]);
   return 0;
 }
