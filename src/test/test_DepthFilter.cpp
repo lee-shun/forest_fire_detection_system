@@ -29,15 +29,21 @@ bool ReadTranslation(const std::string filename, const int index,
 
   std::string trans_tmp;
   std::vector<double> trans_elements;
-  FFDS::TOOLS::SeekToLine(fin, index);
+  FFDS::TOOLS::SeekToLine(fin, index+1);
   // read each index, x, y, z, everytime
   for (int i = 0; i < 4; ++i) {
     if (!getline(fin, trans_tmp, ',')) {
       PRINT_ERROR("pose reading error! at index %d", index);
       return false;
     }
-    PRINT_DEBUG("read trans:index+xyz:%.8f", std::stod(trans_tmp));
+    // PRINT_DEBUG("read trans:index+xyz:%.8f", std::stod(trans_tmp));
     trans_elements.push_back(std::stod(trans_tmp));
+  }
+
+  if (trans_elements[0] != static_cast<double>(index)) {
+    PRINT_INFO("mismach index of give and read! give: %d, read: %f", index,
+               trans_elements[0]);
+    return false;
   }
 
   *trans =
@@ -65,22 +71,24 @@ int main(int argc, char** argv) {
                      init_cov2);  // 深度图方差
 
   // TODO: 指定ref_point
+  Eigen::Vector2d ref_point(200, 200);
 
   // STEP: read the ref translation
   Eigen::Vector3d ref_trans;
-  if (ReadTranslation(translation_path, 1, &ref_trans)) return 1;
+  if (!ReadTranslation(translation_path, 1, &ref_trans)) return 1;
 
-  // for (int i = 2; i < 100; ++i) {
-  //   cv::Mat cur_img =
-  //       cv::imread(dataset_path + "/" + std::to_string(i) + ".png", 0);
-  //   Eigen::Vector3d cur_trans;
-  //   if (ReadTranslation(translation_path, i, &cur_trans)) return 1;
-  //
-  //   Eigen::Vector3d trans = cur_trans - ref_trans;
-  //   Sophus::SE3d TCR(Eigen::Matrix3d::Identity(), trans);
-  //
-  //   // TODO: 显示极线, 显示匹配, 单步运行
-  // }
+  // read updates from index(image name: 1)
+  for (int i = 1; i < 100; ++i) {
+    cv::Mat cur_img =
+        cv::imread(dataset_path + "/" + std::to_string(i) + ".png", 0);
+    Eigen::Vector3d cur_trans;
+    if (!ReadTranslation(translation_path, i, &cur_trans)) return 1;
+
+    Eigen::Vector3d trans = cur_trans - ref_trans;
+    Sophus::SE3d TCR(Eigen::Matrix3d::Identity(), trans);
+
+    filter.UpdateDepth(ref_img, cur_img, TCR, ref_point, depth, depth_cov2);
+  }
 
   // 输出最后的结果
 
