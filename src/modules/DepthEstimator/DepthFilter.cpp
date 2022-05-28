@@ -84,18 +84,18 @@ bool FFDS::MODULES::DepthFilter::EpipolarSearch(
 
   double best_ncc = -1.0;
   Eigen::Vector2d best_px_curr;
-  // for (double l = -half_length; l <= half_length; l += 0.707) {
-  //   Eigen::Vector2d px_curr = px_mean_curr + l * epipolar_direction;
-  //
-  //   if (!Inside(px_curr)) continue;
-  //
-  //   double ncc = NCC(ref, curr, pt_ref, px_curr);
-  //
-  //   if (ncc > best_ncc) {
-  //     best_ncc = ncc;
-  //     best_px_curr = px_curr;
-  //   }
-  // }
+  for (double l = -half_length; l <= half_length; l += 0.707) {
+    Eigen::Vector2d px_curr = px_mean_curr + l * epipolar_direction;
+
+    if (!Inside(px_curr)) continue;
+
+    double ncc = NCC(ref, curr, pt_ref, px_curr);
+
+    if (ncc > best_ncc) {
+      best_ncc = ncc;
+      best_px_curr = px_curr;
+    }
+  }
 
   if (best_ncc < 0.85f) return false;
 

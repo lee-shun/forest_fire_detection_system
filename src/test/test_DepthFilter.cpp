@@ -29,7 +29,7 @@ bool ReadTranslation(const std::string filename, const int index,
 
   std::string trans_tmp;
   std::vector<double> trans_elements;
-  FFDS::TOOLS::SeekToLine(fin, index+1);
+  FFDS::TOOLS::SeekToLine(fin, index + 1);
   // read each index, x, y, z, everytime
   for (int i = 0; i < 4; ++i) {
     if (!getline(fin, trans_tmp, ',')) {
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
   FFDS::MODULES::DepthFilter::Param param;
 
   // STEP: read the ref image
-  cv::Mat ref_img = cv::imread(img_path + "/0.png", 0);
+  cv::Mat ref_img = cv::imread(img_path + "/1.png", 0);
   double init_depth = 10.0;  // 深度初始值
   double init_cov2 = 10.0;   // 方差初始值
   cv::Mat depth(param.height, param.width, CV_64F, init_depth);  // 深度图
@@ -75,16 +75,20 @@ int main(int argc, char** argv) {
   // STEP: read the ref translation
   Eigen::Vector3d ref_trans;
   if (!ReadTranslation(translation_path, 1, &ref_trans)) return 1;
+  Sophus::SE3d TWR(Eigen::Matrix3d::Identity(), ref_trans);
 
   // read updates from index(image name: 1)
-  for (int i = 2; i < 3; ++i) {
+  for (int i = 2; i < 10; ++i) {
     cv::Mat cur_img =
         cv::imread(img_path + "/" + std::to_string(i) + ".png", 0);
     Eigen::Vector3d cur_trans;
     if (!ReadTranslation(translation_path, i, &cur_trans)) return 1;
+  Sophus::SE3d TWC(Eigen::Matrix3d::Identity(), cur_trans);
 
-    Eigen::Vector3d trans = cur_trans - ref_trans;
-    Sophus::SE3d TCR(Eigen::Matrix3d::Identity(), trans);
+    Sophus::SE3d TCR = TWC.inverse() * TWR;
+
+    std::cout << "TCR.rotation" << TCR.rotationMatrix() << std::endl;
+    std::cout << "TCR.translation" << TCR.translation() << std::endl;
 
     if (ref_img.empty() || cur_img.empty()) {
       PRINT_ERROR("image index: %d is Empty!", i);
@@ -95,8 +99,8 @@ int main(int argc, char** argv) {
   }
 
   // 输出最后的结果
-    cv::imshow("depth_estimation", depth * 0.2);
-    cv::waitKey(0);
-    PRINT_INFO("depth: %f", depth.ptr<double>(200)[200]);
+  cv::imshow("depth_estimation", depth * 0.2);
+  cv::waitKey(0);
+  PRINT_INFO("depth: %f", depth.ptr<double>(707)[386]);
   return 0;
 }
