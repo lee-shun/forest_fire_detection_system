@@ -15,9 +15,12 @@
 #ifndef INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 #define INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 
+#include "modules/H20TIMUPoseGrabber/H20TIMUPoseGrabber.hpp"
+
 namespace FFDS {
 namespace APP {
 class GrabInfoForReconstruction {
+
   void GenWPListForCircle(int nums);
 };
 }  // namespace APP

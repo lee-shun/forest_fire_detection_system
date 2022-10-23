@@ -39,11 +39,11 @@ class ZigzagPathPlanner : public MODULES::PathPlannerBase {
   ZigzagPathPlanner() {}
   ZigzagPathPlanner(sensor_msgs::NavSatFix home, int num, float len, float wid,
                     float height)
-      : homeGPos(home),
-        zigzagNum(num),
+      : zigzagNum(num),
         zigzagLen(len),
         zigzagWid(wid),
-        zigzagHeight(height) {}
+        zigzagHeight(height),
+        homeGPos(home) {}
 
   ~ZigzagPathPlanner() {}
 
