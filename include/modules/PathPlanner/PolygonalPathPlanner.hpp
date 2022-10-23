@@ -43,6 +43,10 @@ class PolygonalPathPlanner {
  private:
   void FindStartPos(double s[2]);
 
+  void GenLocalPos(const float height);
+
+  void CalLocalWpFrom(const double start[2], const float deg, double cur[2]);
+
   sensor_msgs::NavSatFix home_;
   sensor_msgs::NavSatFix center_;
   int num_of_wps_;
