@@ -32,10 +32,10 @@ FFDS::MODULES::H20TIMUPoseGrabber::H20TIMUPoseGrabber() {
   topic_synchronizer_ =
       new message_filters::Synchronizer<PoseAttStereoSyncPloicy>(
           PoseAttStereoSyncPloicy(10), gps_sub_, local_pos_sub_, attitude_sub_,
-          img_rgb_sub_, img_ir_sub_);
+          gimbal_angle_sub_, img_rgb_sub_, img_ir_sub_);
 
-  topic_synchronizer_->registerCallback(
-      boost::bind(&H20TIMUPoseGrabber::SyncCallback, this, _1, _2, _3, _4, _5));
+  topic_synchronizer_->registerCallback(boost::bind(
+      &H20TIMUPoseGrabber::SyncCallback, this, _1, _2, _3, _4, _5, _6));
 
   ros::Duration(1.0).sleep();
   PRINT_INFO("Create H20TIMUPoseGrabber done!");
@@ -45,9 +45,11 @@ void FFDS::MODULES::H20TIMUPoseGrabber::SyncCallback(
     const sensor_msgs::NavSatFixConstPtr& gps_msg,
     const geometry_msgs::PointStampedConstPtr& local_pos_msg,
     const geometry_msgs::QuaternionStampedConstPtr& att_msg,
+    const geometry_msgs::Vector3StampedConstPtr& gimbal_angle_msg,
     const sensor_msgs::ImageConstPtr& rgb_img_msg,
     const sensor_msgs::ImageConstPtr& ir_img_msg) {
   att_ = *att_msg;
+  gimbal_angle_ = *gimbal_angle_msg;
   gps_pos_ = *gps_msg;
   local_pos_ = *local_pos_msg;
 
