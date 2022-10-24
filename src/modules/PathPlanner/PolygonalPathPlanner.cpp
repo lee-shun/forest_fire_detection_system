@@ -28,18 +28,24 @@ void PolygonalPathPlanner::GenLocalPos(const float height) {
 
   local_pos_vec_.push_back(
       COMMON::LocalPosition<double>(start[0], start[1], height));
-  float each_deg = 360.0 / num_of_wps_;
-  float cur_deg = 0.0;
-  while (cur_deg + each_deg <= 360.0) {
-    cur_deg += each_deg;
+  float each_rad = M_PI / num_of_wps_;
+  float cur_rad = 0.0;
+  while (cur_rad + each_rad <= M_PI) {
+    cur_rad += each_rad;
     double cur_pos[2];
-    CalLocalWpFrom(start, cur_deg, cur_pos);
+    CalLocalWpFrom(start, cur_rad, cur_pos);
     local_pos_vec_.push_back(
         COMMON::LocalPosition<double>(cur_pos[0], cur_pos[1], height));
   }
 }
+
+// counter clockwise, as the define the angle
 void PolygonalPathPlanner::CalLocalWpFrom(const double start[2],
-                                          const float deg, double cur[2]) {}
+                                          const float rad, double cur[2]) {
+  float angle = rad + std::atan2(cur[1], cur[0]);
+  cur[0] = radius_ * std::cos(rad);
+  cur[1] = radius_ * std::sin(rad);
+}
 
 void PolygonalPathPlanner::FindStartPos(double s[2]) {
   // take the center as the local ref...NED
@@ -82,6 +88,56 @@ void PolygonalPathPlanner::FindStartPos(double s[2]) {
 
   s = euler_dis(s1) < euler_dis(s2) ? s1 : s2;
 };
+
+void PolygonalPathPlanner::FeedWp2Vec() {
+  dji_osdk_ros::WaypointV2 wpV2;
+  MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
+
+  // the point over the home point
+  wpV2.latitude = home_.latitude;
+  wpV2.longitude = home_.longitude;
+  wpV2.relativeHeight = local_pos_vec_[0].z;
+  wp_v2_vec_.push_back(wpV2);
+
+  double ref[3], result[3];
+  ref[0] = center_.latitude;
+  ref[1] = center_.longitude;
+  ref[2] = center_.altitude;
+
+  // TODO: or I can use the interest point...
+  for (int i = 0; i < local_pos_vec_.size(); ++i) {
+    MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
+
+    // STEP: 1 cal the pos
+    TOOLS::Meter2LatLongAlt<double>(ref, local_pos_vec_[i], result);
+    wpV2.latitude = TOOLS::Deg2Rad(result[0]);
+    wpV2.longitude = TOOLS::Deg2Rad(result[1]);
+    wpV2.relativeHeight = local_pos_vec_[i].z;
+
+    // STEP: 2 set the direction
+    wpV2.headingMode =
+        dji_osdk_ros::WaypointV2::DJIWaypointV2HeadingWaypointCustom;
+
+    // note here the caiculation!
+    float x = local_pos_vec_[i].x, y = local_pos_vec_[i].y;
+    float abs_ang = std::atan2(y, x);
+    if(x > 0 && y > 0) {
+      // 1
+      wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
+    } else if (x < 0 && y>0) {
+      // 2
+      wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
+    } else if (x < 0 && y < 0) {
+      // 3
+      wpV2.heading = TOOLS::Deg2Rad(M_PI - abs_ang);
+    } else {
+      // 4
+      wpV2.heading = TOOLS::Deg2Rad(M_PI - abs_ang);
+    }
+
+    wp_v2_vec_.push_back(wpV2);
+  }
+}
 
 }  // namespace MODULES
 }  // namespace FFDS

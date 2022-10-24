@@ -24,7 +24,7 @@ void FFDS::MODULES::WpV2Operator::setWaypointV2Defaults(
   waypointV2Ptr->config.useLocalCruiseVel = 0;
   waypointV2Ptr->config.useLocalMaxVel = 0;
 
-  waypointV2Ptr->dampingDistance = 20.0;
+  waypointV2Ptr->dampingDistance = 5.0;
   waypointV2Ptr->heading = 0;
   waypointV2Ptr->turnMode = DJI::OSDK::DJIWaypointV2TurnModeClockwise;
 
@@ -35,8 +35,8 @@ void FFDS::MODULES::WpV2Operator::setWaypointV2Defaults(
   waypointV2Ptr->longitude = 0.0;
   waypointV2Ptr->latitude = 0.0;
 
-  waypointV2Ptr->maxFlightSpeed = 5.0;
-  waypointV2Ptr->autoFlightSpeed = 1.0;
+  waypointV2Ptr->maxFlightSpeed = 2.0;
+  waypointV2Ptr->autoFlightSpeed = 0.2;
 }
 
 bool FFDS::MODULES::WpV2Operator::initWaypointV2Setting(

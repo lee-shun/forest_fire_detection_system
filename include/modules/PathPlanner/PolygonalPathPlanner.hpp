@@ -30,6 +30,7 @@ namespace FFDS {
 namespace MODULES {
 class PolygonalPathPlanner {
  public:
+  // degree in rads
   PolygonalPathPlanner(sensor_msgs::NavSatFix home,
                        sensor_msgs::NavSatFix center, int num_of_wps,
                        float radius)
@@ -45,7 +46,9 @@ class PolygonalPathPlanner {
 
   void GenLocalPos(const float height);
 
-  void CalLocalWpFrom(const double start[2], const float deg, double cur[2]);
+  void CalLocalWpFrom(const double start[2], const float rad, double cur[2]);
+
+  void FeedWp2Vec();
 
   sensor_msgs::NavSatFix home_;
   sensor_msgs::NavSatFix center_;
