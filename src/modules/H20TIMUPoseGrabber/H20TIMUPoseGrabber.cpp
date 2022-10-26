@@ -23,6 +23,7 @@ FFDS::MODULES::H20TIMUPoseGrabber::H20TIMUPoseGrabber() {
   gps_sub_.subscribe(nh_, "dji_osdk_ros/gps_position", 1);
   local_pos_sub_.subscribe(nh_, "dji_osdk_ros/local_position", 1);
   attitude_sub_.subscribe(nh_, "dji_osdk_ros/attitude", 1);
+  gimbal_angle_sub_.subscribe(nh_, "dji_osdk_ros/gimbal_angle", 1);
   img_rgb_sub_.subscribe(
       nh_, "forest_fire_detection_system/main_camera_rgb_image", 1);
   img_ir_sub_.subscribe(nh_,

@@ -19,6 +19,9 @@ namespace FFDS {
 namespace MODULES {
 
 std::vector<dji_osdk_ros::WaypointV2>& PolygonalPathPlanner::getWpV2Vec() {
+  GenLocalPos(15.0);
+  FeedWp2Vec();
+
   return wp_v2_vec_;
 }
 
@@ -118,7 +121,7 @@ void PolygonalPathPlanner::FeedWp2Vec() {
     wpV2.headingMode =
         dji_osdk_ros::WaypointV2::DJIWaypointV2HeadingWaypointCustom;
 
-    // note here the caiculation!
+    // NOTE: calculation!
     float x = local_pos_vec_[i].x, y = local_pos_vec_[i].y;
     float abs_ang = std::atan2(y, x);
     if(x > 0 && y > 0) {
