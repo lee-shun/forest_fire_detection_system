@@ -18,6 +18,7 @@
 
 namespace FFDS {
 namespace APP {
+
 void GrabInfoReconstructionManager::initWpSetting(
     dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr) {
   // should be changeable about the numbers and the centers
@@ -40,6 +41,32 @@ void GrabInfoReconstructionManager::initWpSetting(
   }
   GPSplanWriter.close();
   LocalplanWriter.close();
+
+  /**
+   * init WpV2 mission
+   * */
+  initWaypointV2SettingPtr->request.actionNum = wp_v2_vec.size();
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.repeatTimes = 1;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.finishedAction =
+      initWaypointV2SettingPtr->request.waypointV2InitSettings
+          .DJIWaypointV2MissionFinishedGoHome;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 1;
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.autoFlightSpeed = 0.5;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings
+      .exitMissionOnRCSignalLost = 1;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings
+      .gotoFirstWaypointMode =
+      initWaypointV2SettingPtr->request.waypointV2InitSettings
+          .DJIWaypointV2MissionGotoFirstWaypointModePointToPoint;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.mission = wp_v2_vec;
+
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.missTotalLen =
+      initWaypointV2SettingPtr->request.waypointV2InitSettings.mission.size();
 }
 
 void GrabInfoReconstructionManager::Run() {
