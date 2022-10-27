@@ -68,35 +68,32 @@ void PolygonalPathPlanner::FindStartPos(double s[2]) {
   auto tmp = euler_dis(s1) < euler_dis(s2) ? s1 : s2;
   s[0] = tmp[0];
   s[1] = tmp[1];
-
 };
 
 void PolygonalPathPlanner::GenLocalPos(const float height) {
   double start[2];
   FindStartPos(start);
 
-  PRINT_INFO("start local pos: %lf, %lf", start[0], start[1]);
-
   local_pos_vec_.push_back(
       COMMON::LocalPosition<double>(start[0], start[1], height));
 
-  float each_rad = 2*M_PI / num_of_wps_;
+  float each_rad = 2 * M_PI / num_of_wps_;
   float cur_rad = 0.0;
-  while (cur_rad + each_rad <= 2*M_PI) {
+  while (cur_rad + each_rad <= 2 * M_PI) {
     cur_rad += each_rad;
+
+    double angle = cur_rad + std::atan2(start[1], start[0]);
     double cur_pos[2];
-    CalLocalWpFrom(start, cur_rad, cur_pos);
+    CalLocalWpFrom(angle, cur_pos);
     local_pos_vec_.push_back(
         COMMON::LocalPosition<double>(cur_pos[0], cur_pos[1], height));
   }
 }
 
 // counter clockwise, as the define the angle
-void PolygonalPathPlanner::CalLocalWpFrom(const double start[2],
-                                          const float rad, double cur[2]) {
-  float angle = rad + std::atan2(start[1], start[0]);
-  cur[0] = radius_ * std::cos(angle);
-  cur[1] = radius_ * std::sin(angle);
+void PolygonalPathPlanner::CalLocalWpFrom( const float rad, double cur[2]) {
+  cur[0] = radius_ * std::cos(rad);
+  cur[1] = radius_ * std::sin(rad);
 }
 
 void PolygonalPathPlanner::FeedWp2Vec() {
@@ -104,8 +101,8 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
 
   // the point over the home point
-  wpV2.latitude = home_.latitude;
-  wpV2.longitude = home_.longitude;
+  wpV2.latitude = TOOLS::Deg2Rad(home_.latitude);
+  wpV2.longitude = TOOLS::Deg2Rad(home_.longitude);
   wpV2.relativeHeight = local_pos_vec_[0].z;
   wp_v2_vec_.push_back(wpV2);
 
@@ -117,6 +114,9 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   // TODO: or I can use the interest point...
   for (int i = 0; i < local_pos_vec_.size(); ++i) {
     MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
+
+    PRINT_INFO("cur local pos: %lf, %lf", local_pos_vec_[i].x,
+               local_pos_vec_[i].y);
 
     // STEP: 1 cal the pos
     TOOLS::Meter2LatLongAlt<double>(ref, local_pos_vec_[i], result);

@@ -46,7 +46,7 @@ class PolygonalPathPlanner {
 
   void GenLocalPos(const float height);
 
-  void CalLocalWpFrom(const double start[2], const float rad, double cur[2]);
+  void CalLocalWpFrom(const float rad, double cur[2]);
 
   void FeedWp2Vec();
 

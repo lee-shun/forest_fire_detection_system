@@ -20,16 +20,16 @@ int main(int argc, char** argv) {
   // home position
   sensor_msgs::NavSatFix home;
   home.altitude = 25.445088;
-  home.latitude = 45.4551694;
-  home.longitude = -73.9152677;
+  home.latitude = 45.4550769;
+  home.longitude = -73.915427;
 
   // center of the fire
   sensor_msgs::NavSatFix center;
   center.altitude = 25.5387778;
-  center.latitude = 45.455238;
-  center.longitude = -73.9151575;
+  center.latitude = 45.4552318;
+  center.longitude = -73.9149486;
 
-  FFDS::MODULES::PolygonalPathPlanner planner(home, center, 10, 15.0);
+  FFDS::MODULES::PolygonalPathPlanner planner(home, center, 20, 15.0);
   auto waypointVec = planner.getWpV2Vec();
 
   FFDS::TOOLS::GoogleEarthPath path("/home/ls/polygonal_path.kml", "polygonal_path");
