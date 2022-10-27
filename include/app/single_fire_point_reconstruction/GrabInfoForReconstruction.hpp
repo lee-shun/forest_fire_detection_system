@@ -15,13 +15,24 @@
 #ifndef INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 #define INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 
-#include "modules/H20TIMUPoseGrabber/H20TIMUPoseGrabber.hpp"
+#include <modules/H20TIMUPoseGrabber/H20TIMUPoseGrabber.hpp>
+#include <modules/GimbalCameraOperator/GimbalCameraOperator.hpp>
+#include <modules/WayPointOperator/WpV2Operator.hpp>
 
 namespace FFDS {
 namespace APP {
-class GrabInfoForReconstruction {
+class GrabInfoReconstructionManager {
+  public:
+  // should run in 2 threads
+  void Run();
+  void Grab();
 
-  void GenWPListForCircle(int nums);
+ private:
+  // TODO: add multiple centers
+  sensor_msgs::NavSatFix home_, center_;
+
+  void initWpSetting(
+      dji_osdk_ros::InitWaypointV2Setting *initWaypointV2SettingPtr);
 };
 }  // namespace APP
 }  // namespace FFDS

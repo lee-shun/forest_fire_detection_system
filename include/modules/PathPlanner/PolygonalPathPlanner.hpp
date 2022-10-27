@@ -33,16 +33,18 @@ class PolygonalPathPlanner {
   // degree in rads
   PolygonalPathPlanner(sensor_msgs::NavSatFix home,
                        sensor_msgs::NavSatFix center, int num_of_wps,
-                       float radius)
+                       float radius, float height)
       : home_(home),
         center_(center),
         num_of_wps_(num_of_wps),
-        radius_(radius) {}
+        radius_(radius),
+        height_(height) {}
 
   std::vector<dji_osdk_ros::WaypointV2>& getWpV2Vec();
+  std::vector<FFDS::COMMON::LocalPosition<double>>& getLocalPosVec();
 
  private:
-  void FindStartPos(double s[2]);
+  void FindStartPos(double start_loc[2], double home_loc[2]);
 
   void GenLocalPos(const float height);
 
@@ -54,6 +56,7 @@ class PolygonalPathPlanner {
   sensor_msgs::NavSatFix center_;
   int num_of_wps_;
   float radius_;
+  float height_;
 
   /* the NavSatFix is float64==double */
   std::vector<COMMON::LocalPosition<double>> local_pos_vec_;

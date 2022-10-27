@@ -30,9 +30,9 @@ void FFDS::MODULES::GimbalCameraOperator::setGimbalActionDefault() {
   gimbalAction.request.payload_index =
       static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
   gimbalAction.request.is_reset = false;
-  gimbalAction.request.pitch = 0.0;
+  gimbalAction.request.pitch = 0.0f;
   gimbalAction.request.roll = 0.0f;
-  gimbalAction.request.yaw = 0.0;
+  gimbalAction.request.yaw = 0.0f;
   gimbalAction.request.rotationMode = 0;
   gimbalAction.request.time = 1.0;
 }
@@ -51,6 +51,24 @@ Eigen::Vector3f FFDS::MODULES::GimbalCameraOperator::camera2NED(
   return eularMatrix * d_attInCamera;
 }
 
+bool FFDS::MODULES::GimbalCameraOperator::rotateByDeg(const float pitch,
+                                                      const float roll,
+                                                      const float yaw,
+                                                      bool is_inc) {
+  setGimbalActionDefault();
+  gimbalAction.request.is_reset = false;
+  gimbalAction.request.pitch = pitch;
+  gimbalAction.request.roll = roll;
+  gimbalAction.request.yaw = yaw;
+
+  /* 0 for incremental mode, 1 for absolute mode */
+  gimbalAction.request.rotationMode = is_inc ? 0 : 1;
+  gimbalAction.request.time = 0.5;
+  gimbalCtrlClient.call(gimbalAction);
+
+  return gimbalAction.response.result;
+}
+
 bool FFDS::MODULES::GimbalCameraOperator::ctrlRotateGimbal(
     const int times, const float tolErrPix) {
   PRINT_INFO("use the thermal camera image center as the target!");
@@ -67,6 +85,7 @@ bool FFDS::MODULES::GimbalCameraOperator::ctrlRotateGimbal(
   return ctrlRotateGimbal(IR_img_width / 2, IR_img_height / 2, times,
                           tolErrPix);
 }
+
 /**
  * @param[in]  x and y set position on the IR image, the controlling time and
  * finally control stop error.
@@ -140,24 +159,11 @@ bool FFDS::MODULES::GimbalCameraOperator::ctrlRotateGimbal(
 
       /* WARN: the gimbal x is pitch, y is roll, z is yaw, it's left hand
        * WARN: rule??? YOU GOT BE KIDDING ME! */
-      Eigen::Vector3f d_attCam(d_pitchCam, 0.0f, d_yawCam);
-
-      setGimbalActionDefault();
-      gimbalAction.request.is_reset = false;
-      gimbalAction.request.pitch = d_attCam(0);
-      gimbalAction.request.roll = d_attCam(1);
-      gimbalAction.request.yaw = d_attCam(2);
-
-      /* 0 for incremental mode, 1 for absolute mode */
-      gimbalAction.request.rotationMode = 0;
-      gimbalAction.request.time = 0.5;
-      gimbalCtrlClient.call(gimbalAction);
-
+      rotateByDeg(d_pitchCam, 0.0f, d_yawCam, true);
       gimbalWriter.write(ctrl_times, heatPosPix.img_x, heatPosPix.img_y, errX,
                          errY, d_yawCam, d_pitchCam);
 
       ctrl_times += 1;
-
       ros::Duration(1.0).sleep();
     }
   }

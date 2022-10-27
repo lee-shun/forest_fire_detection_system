@@ -69,6 +69,7 @@ class GimbalCameraOperator {
   /* NOTE: The following functions should work under the zoom mode and aligned
    * NOTE: mode! */
 
+  bool rotateByDeg(const float pitch, const float roll, const float yaw, bool is_inc);
   bool ctrlRotateGimbal(const float setPosXPix, const float setPosYPix,
                         const int times, const float tolErrPix);
   bool ctrlRotateGimbal(const int times, const float tolErrPix);

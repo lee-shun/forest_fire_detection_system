@@ -20,21 +20,30 @@ namespace FFDS {
 namespace MODULES {
 
 std::vector<dji_osdk_ros::WaypointV2>& PolygonalPathPlanner::getWpV2Vec() {
-  GenLocalPos(15.0);
+  GenLocalPos(height_);
   FeedWp2Vec();
 
   return wp_v2_vec_;
 }
 
-void PolygonalPathPlanner::FindStartPos(double s[2]) {
+std::vector<FFDS::COMMON::LocalPosition<double>>&
+PolygonalPathPlanner::getLocalPosVec() {
+  GenLocalPos(height_);
+  return local_pos_vec_;
+}
+
+void PolygonalPathPlanner::FindStartPos(double start_loc[2],
+                                        double home_loc[2]) {
   // take the center as the local ref...NED
-  double c[2], h[2], m[2];  // now, m is the local pos under the center
+  double c[2], h[2], m[2];  // now, m is the local pos of home under the center
   c[0] = center_.latitude;
   c[1] = center_.longitude;
   h[0] = home_.latitude;
   h[1] = home_.longitude;
 
   TOOLS::LatLong2Meter(c, h, m);
+  home_loc[0] = m[0];
+  home_loc[1] = m[1];
 
   double s1[2] = {0.0, 0.0}, s2[2] = {0.0, 0.0};
 
@@ -66,23 +75,24 @@ void PolygonalPathPlanner::FindStartPos(double s[2]) {
   };
 
   auto tmp = euler_dis(s1) < euler_dis(s2) ? s1 : s2;
-  s[0] = tmp[0];
-  s[1] = tmp[1];
+  start_loc[0] = tmp[0];
+  start_loc[1] = tmp[1];
 };
 
 void PolygonalPathPlanner::GenLocalPos(const float height) {
-  double start[2];
-  FindStartPos(start);
-
+  double start_loc[2], home_loc[2];
+  FindStartPos(start_loc, home_loc);
   local_pos_vec_.push_back(
-      COMMON::LocalPosition<double>(start[0], start[1], height));
+      COMMON::LocalPosition<double>(home_loc[0], home_loc[1], height));
+  local_pos_vec_.push_back(
+      COMMON::LocalPosition<double>(start_loc[0], start_loc[1], height));
 
   float each_rad = 2 * M_PI / num_of_wps_;
   float cur_rad = 0.0;
   while (cur_rad + each_rad <= 2 * M_PI) {
     cur_rad += each_rad;
 
-    double angle = cur_rad + std::atan2(start[1], start[0]);
+    double angle = cur_rad + std::atan2(start_loc[1], start_loc[0]);
     double cur_pos[2];
     CalLocalWpFrom(angle, cur_pos);
     local_pos_vec_.push_back(
@@ -91,7 +101,7 @@ void PolygonalPathPlanner::GenLocalPos(const float height) {
 }
 
 // counter clockwise, as the define the angle
-void PolygonalPathPlanner::CalLocalWpFrom( const float rad, double cur[2]) {
+void PolygonalPathPlanner::CalLocalWpFrom(const float rad, double cur[2]) {
   cur[0] = radius_ * std::cos(rad);
   cur[1] = radius_ * std::sin(rad);
 }
@@ -99,12 +109,6 @@ void PolygonalPathPlanner::CalLocalWpFrom( const float rad, double cur[2]) {
 void PolygonalPathPlanner::FeedWp2Vec() {
   dji_osdk_ros::WaypointV2 wpV2;
   MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
-
-  // the point over the home point
-  wpV2.latitude = TOOLS::Deg2Rad(home_.latitude);
-  wpV2.longitude = TOOLS::Deg2Rad(home_.longitude);
-  wpV2.relativeHeight = local_pos_vec_[0].z;
-  wp_v2_vec_.push_back(wpV2);
 
   double ref[3], result[3];
   ref[0] = center_.latitude;
@@ -114,9 +118,6 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   // TODO: or I can use the interest point...
   for (int i = 0; i < local_pos_vec_.size(); ++i) {
     MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
-
-    // PRINT_INFO("cur local pos: %lf, %lf", local_pos_vec_[i].x,
-    //            local_pos_vec_[i].y);
 
     // STEP: 1 cal the pos
     TOOLS::Meter2LatLongAlt<double>(ref, local_pos_vec_[i], result);
