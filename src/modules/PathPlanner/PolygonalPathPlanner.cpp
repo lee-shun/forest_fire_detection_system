@@ -79,9 +79,10 @@ void PolygonalPathPlanner::GenLocalPos(const float height) {
 
   local_pos_vec_.push_back(
       COMMON::LocalPosition<double>(start[0], start[1], height));
-  float each_rad = M_PI / num_of_wps_;
+
+  float each_rad = 2*M_PI / num_of_wps_;
   float cur_rad = 0.0;
-  while (cur_rad + each_rad <= M_PI) {
+  while (cur_rad + each_rad <= 2*M_PI) {
     cur_rad += each_rad;
     double cur_pos[2];
     CalLocalWpFrom(start, cur_rad, cur_pos);
@@ -93,9 +94,9 @@ void PolygonalPathPlanner::GenLocalPos(const float height) {
 // counter clockwise, as the define the angle
 void PolygonalPathPlanner::CalLocalWpFrom(const double start[2],
                                           const float rad, double cur[2]) {
-  float angle = rad + std::atan2(cur[1], cur[0]);
-  cur[0] = radius_ * std::cos(rad);
-  cur[1] = radius_ * std::sin(rad);
+  float angle = rad + std::atan2(start[1], start[0]);
+  cur[0] = radius_ * std::cos(angle);
+  cur[1] = radius_ * std::sin(angle);
 }
 
 void PolygonalPathPlanner::FeedWp2Vec() {
