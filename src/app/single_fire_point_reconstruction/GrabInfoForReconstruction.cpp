@@ -87,6 +87,14 @@ void GrabInfoReconstructionManager::Run() {
     return;
   }
   ros::Duration(1.0).sleep();
+
+  /* Step: 2 upload the wp mission */
+
+  /* Step: 3 init the wp action */
+
+  /* Step: 4 upload the wp action */
+
+  /* Step: 5 start mission */
 }
 
 }  // namespace APP
