@@ -115,8 +115,8 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   for (int i = 0; i < local_pos_vec_.size(); ++i) {
     MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
 
-    PRINT_INFO("cur local pos: %lf, %lf", local_pos_vec_[i].x,
-               local_pos_vec_[i].y);
+    // PRINT_INFO("cur local pos: %lf, %lf", local_pos_vec_[i].x,
+    //            local_pos_vec_[i].y);
 
     // STEP: 1 cal the pos
     TOOLS::Meter2LatLongAlt<double>(ref, local_pos_vec_[i], result);
