@@ -14,6 +14,7 @@
  *******************************************************************************/
 
 #include "modules/PathPlanner/PolygonalPathPlanner.hpp"
+#include "tools/PrintControl/PrintCtrlMacro.h"
 
 namespace FFDS {
 namespace MODULES {
@@ -25,34 +26,9 @@ std::vector<dji_osdk_ros::WaypointV2>& PolygonalPathPlanner::getWpV2Vec() {
   return wp_v2_vec_;
 }
 
-void PolygonalPathPlanner::GenLocalPos(const float height) {
-  double start[2];
-  FindStartPos(start);
-
-  local_pos_vec_.push_back(
-      COMMON::LocalPosition<double>(start[0], start[1], height));
-  float each_rad = M_PI / num_of_wps_;
-  float cur_rad = 0.0;
-  while (cur_rad + each_rad <= M_PI) {
-    cur_rad += each_rad;
-    double cur_pos[2];
-    CalLocalWpFrom(start, cur_rad, cur_pos);
-    local_pos_vec_.push_back(
-        COMMON::LocalPosition<double>(cur_pos[0], cur_pos[1], height));
-  }
-}
-
-// counter clockwise, as the define the angle
-void PolygonalPathPlanner::CalLocalWpFrom(const double start[2],
-                                          const float rad, double cur[2]) {
-  float angle = rad + std::atan2(cur[1], cur[0]);
-  cur[0] = radius_ * std::cos(rad);
-  cur[1] = radius_ * std::sin(rad);
-}
-
 void PolygonalPathPlanner::FindStartPos(double s[2]) {
   // take the center as the local ref...NED
-  double c[2], h[2], m[2];
+  double c[2], h[2], m[2];  // now, m is the local pos under the center
   c[0] = center_.latitude;
   c[1] = center_.longitude;
   h[0] = home_.latitude;
@@ -86,11 +62,41 @@ void PolygonalPathPlanner::FindStartPos(double s[2]) {
   // find the nearest one
   auto euler_dis = [m](double cur[2]) {
     double x = cur[0] - m[0], y = cur[1] - m[1];
-    return sqrt(x * x + y * y);
+    return (x * x + y * y);
   };
 
-  s = euler_dis(s1) < euler_dis(s2) ? s1 : s2;
+  auto tmp = euler_dis(s1) < euler_dis(s2) ? s1 : s2;
+  s[0] = tmp[0];
+  s[1] = tmp[1];
+
 };
+
+void PolygonalPathPlanner::GenLocalPos(const float height) {
+  double start[2];
+  FindStartPos(start);
+
+  PRINT_INFO("start local pos: %lf, %lf", start[0], start[1]);
+
+  local_pos_vec_.push_back(
+      COMMON::LocalPosition<double>(start[0], start[1], height));
+  float each_rad = M_PI / num_of_wps_;
+  float cur_rad = 0.0;
+  while (cur_rad + each_rad <= M_PI) {
+    cur_rad += each_rad;
+    double cur_pos[2];
+    CalLocalWpFrom(start, cur_rad, cur_pos);
+    local_pos_vec_.push_back(
+        COMMON::LocalPosition<double>(cur_pos[0], cur_pos[1], height));
+  }
+}
+
+// counter clockwise, as the define the angle
+void PolygonalPathPlanner::CalLocalWpFrom(const double start[2],
+                                          const float rad, double cur[2]) {
+  float angle = rad + std::atan2(cur[1], cur[0]);
+  cur[0] = radius_ * std::cos(rad);
+  cur[1] = radius_ * std::sin(rad);
+}
 
 void PolygonalPathPlanner::FeedWp2Vec() {
   dji_osdk_ros::WaypointV2 wpV2;
@@ -124,10 +130,10 @@ void PolygonalPathPlanner::FeedWp2Vec() {
     // NOTE: calculation!
     float x = local_pos_vec_[i].x, y = local_pos_vec_[i].y;
     float abs_ang = std::atan2(y, x);
-    if(x > 0 && y > 0) {
+    if (x > 0 && y > 0) {
       // 1
       wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
-    } else if (x < 0 && y>0) {
+    } else if (x < 0 && y > 0) {
       // 2
       wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
     } else if (x < 0 && y < 0) {
