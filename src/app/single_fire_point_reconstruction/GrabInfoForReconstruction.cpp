@@ -15,9 +15,21 @@
 
 #include <app/single_fire_point_reconstruction/GrabInfoForReconstruction.hpp>
 #include <modules/PathPlanner/PolygonalPathPlanner.hpp>
+#include <tools/PositionHelper.hpp>
 
 namespace FFDS {
 namespace APP {
+
+GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
+  // STEP: 1 find home position
+  FFDS::TOOLS::PositionHelper posHelper;
+  home_ =  posHelper.getAverageGPS(10);
+
+  // STEP: 2 read the fire center
+  center_.altitude = 25.5387778;
+  center_.latitude = 45.4552318;
+  center_.longitude = -73.9149486;
+}
 
 void GrabInfoReconstructionManager::initWpV2Setting(
     dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr) {
@@ -52,9 +64,9 @@ void GrabInfoReconstructionManager::initWpV2Setting(
       initWaypointV2SettingPtr->request.waypointV2InitSettings
           .DJIWaypointV2MissionFinishedGoHome;
 
-  initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 1;
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 2;
   initWaypointV2SettingPtr->request.waypointV2InitSettings.autoFlightSpeed =
-      0.5;
+      0.2;
 
   initWaypointV2SettingPtr->request.waypointV2InitSettings
       .exitMissionOnRCSignalLost = 1;
@@ -92,7 +104,7 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
 }
 
 void GrabInfoReconstructionManager::Run() {
-  /* Step: 0 reset the camera and gimbal */
+  /* STEP: 0 init */
   // TODO: set gimbal angle then
   FFDS::MODULES::GimbalCameraOperator gcOperator;
   if (gcOperator.resetCameraZoom() && gcOperator.resetGimbal()) {
@@ -101,7 +113,7 @@ void GrabInfoReconstructionManager::Run() {
     PRINT_WARN("reset camera and gimbal failed!")
   }
 
-  /* Step: 1 init the wp setting, create the basic waypointV2 vector... */
+  /* STEP: 1 init the wp setting, create the basic waypointV2 vector... */
   FFDS::MODULES::WpV2Operator wpV2Operator;
   dji_osdk_ros::InitWaypointV2Setting initWaypointV2Setting_;
   initWpV2Setting(&initWaypointV2Setting_);
@@ -111,7 +123,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 2 upload the wp mission */
+  /* STEP: 2 upload the wp mission */
   dji_osdk_ros::UploadWaypointV2Mission uploadWaypointV2Mission_;
   if (!wpV2Operator.uploadWaypointV2Mission(&uploadWaypointV2Mission_)) {
     PRINT_ERROR("upload wp mission failed!");
@@ -119,7 +131,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 3 init the wp action */
+  /* STEP: 3 init the wp action */
   dji_osdk_ros::GenerateWaypointV2Action generateWaypointV2Action_;
   generateWpV2Actions(&generateWaypointV2Action_,
                       initWaypointV2Setting_.request.actionNum);
@@ -129,7 +141,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 4 upload the wp action */
+  /* STEP: 4 upload the wp action */
   dji_osdk_ros::UploadWaypointV2Action uploadWaypointV2Action_;
   if (!wpV2Operator.uploadWaypointV2Action(&uploadWaypointV2Action_)) {
     PRINT_ERROR("upload wp actions failed!");
@@ -137,7 +149,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 5 start mission */
+  /* STEP: 5 start mission */
   PRINT_INFO(
       "wp_V2 mission & actions init finish, are you ready to start? y/n");
   char inputConfirm;

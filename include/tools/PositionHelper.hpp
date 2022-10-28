@@ -52,7 +52,7 @@ class PositionHelper {
   }
 };
 
-inline sensor_msgs::NavSatFix PositionHelper::getAverageGPS(
+sensor_msgs::NavSatFix PositionHelper::getAverageGPS(
     const int average_times) {
   sensor_msgs::NavSatFix homeGPos;
 
@@ -86,7 +86,7 @@ inline COMMON::LocalPosition<double> PositionHelper::getTargetRelativePos(
       (distance * sin(angle.beta)));
 }
 
-inline sensor_msgs::NavSatFix PositionHelper::getTargetGPS(
+sensor_msgs::NavSatFix PositionHelper::getTargetGPS(
     const sensor_msgs::NavSatFix& myGPos, const COMMON::PosAngle<double> angle,
     const double distance) {
   COMMON::LocalPosition<double> rel_local_pos =

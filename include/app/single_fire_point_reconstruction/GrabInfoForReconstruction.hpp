@@ -23,7 +23,7 @@ namespace FFDS {
 namespace APP {
 class GrabInfoReconstructionManager {
  public:
-  // should run in 2 threads
+  GrabInfoReconstructionManager();
   void Run();
   void Grab();
 
