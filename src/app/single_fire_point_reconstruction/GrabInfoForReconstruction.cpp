@@ -64,9 +64,9 @@ void GrabInfoReconstructionManager::initWpV2Setting(
       initWaypointV2SettingPtr->request.waypointV2InitSettings
           .DJIWaypointV2MissionFinishedGoHome;
 
-  initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 1;
+  initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 2;
   initWaypointV2SettingPtr->request.waypointV2InitSettings.autoFlightSpeed =
-      0.5;
+      0.2;
 
   initWaypointV2SettingPtr->request.waypointV2InitSettings
       .exitMissionOnRCSignalLost = 1;
@@ -123,7 +123,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 2 upload the wp mission */
+  /* STEP: 2 upload the wp mission */
   dji_osdk_ros::UploadWaypointV2Mission uploadWaypointV2Mission_;
   if (!wpV2Operator.uploadWaypointV2Mission(&uploadWaypointV2Mission_)) {
     PRINT_ERROR("upload wp mission failed!");
@@ -131,7 +131,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 3 init the wp action */
+  /* STEP: 3 init the wp action */
   dji_osdk_ros::GenerateWaypointV2Action generateWaypointV2Action_;
   generateWpV2Actions(&generateWaypointV2Action_,
                       initWaypointV2Setting_.request.actionNum);
@@ -141,7 +141,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 4 upload the wp action */
+  /* STEP: 4 upload the wp action */
   dji_osdk_ros::UploadWaypointV2Action uploadWaypointV2Action_;
   if (!wpV2Operator.uploadWaypointV2Action(&uploadWaypointV2Action_)) {
     PRINT_ERROR("upload wp actions failed!");
@@ -149,7 +149,7 @@ void GrabInfoReconstructionManager::Run() {
   }
   ros::Duration(1.0).sleep();
 
-  /* Step: 5 start mission */
+  /* STEP: 5 start mission */
   PRINT_INFO(
       "wp_V2 mission & actions init finish, are you ready to start? y/n");
   char inputConfirm;
