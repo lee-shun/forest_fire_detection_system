@@ -146,7 +146,6 @@ void GrabInfoReconstructionManager::Run() {
     PRINT_WARN("exist!");
     return;
   }
-
   dji_osdk_ros::StartWaypointV2Mission startWaypointV2Mission_;
   if (!wpV2Operator.startWaypointV2Mission(&startWaypointV2Mission_)) {
     PRINT_ERROR("start wp v2 mission failed!");
