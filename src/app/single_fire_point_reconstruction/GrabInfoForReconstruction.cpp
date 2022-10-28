@@ -158,6 +158,7 @@ void GrabInfoReconstructionManager::Run() {
 }  // namespace FFDS
 
 int main(int argc, char** argv) {
+  ros::init(argc, argv, "grad_info_reconstruction_manager_node");
   FFDS::APP::GrabInfoReconstructionManager manager;
   manager.Run();
   return 0;
