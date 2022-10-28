@@ -24,12 +24,17 @@ namespace APP {
 GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
   // STEP: 1 find home position
   FFDS::TOOLS::PositionHelper posHelper;
-  home_ =  posHelper.getAverageGPS(10);
+  home_ = posHelper.getAverageGPS(10);
 
   // STEP: 2 read the fire center
   center_.altitude = 25.5387778;
   center_.latitude = 45.4552318;
   center_.longitude = -73.9149486;
+
+  // STEP: 3 generate the save path
+  root_path_ = std::getenv("HOME");
+  save_path_ = root_path_ + "/m300_grabbed_data_";
+  FFDS::TOOLS::shellRm(save_path_);
 }
 
 void GrabInfoReconstructionManager::initWpV2Setting(
@@ -39,8 +44,9 @@ void GrabInfoReconstructionManager::initWpV2Setting(
   auto wp_v2_vec = planner.getWpV2Vec();
   auto local_pos_vec = planner.getLocalPosVec();
 
-  TOOLS::FileWritter GPSplanWriter("m300_ref_GPS_path.csv", 10);
-  TOOLS::FileWritter LocalplanWriter("m300_ref_Local_path.csv", 10);
+  TOOLS::FileWritter GPSplanWriter(save_path_ + "/m300_ref_GPS_path.csv", 10);
+  TOOLS::FileWritter LocalplanWriter(save_path_ + "/m300_ref_local_path.csv",
+                                     10);
   GPSplanWriter.new_open();
   LocalplanWriter.new_open();
   GPSplanWriter.write("long", "lat", "rel_height");
@@ -105,35 +111,21 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
 }
 
 void GrabInfoReconstructionManager::Grab() {
-  // STEP: set local reference position
-  ros::ServiceClient set_local_pos_ref_client_;
-  set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
-      "/set_local_pos_reference");
-  dji_osdk_ros::SetLocalPosRef set_local_pos_reference;
-  set_local_pos_ref_client_.call(set_local_pos_reference);
-  if (set_local_pos_reference.response.result) {
-    PRINT_INFO("Set local position reference successfully!");
-  } else {
-    PRINT_ERROR("Set local position reference failed!");
-    return;
-  }
-
   // STEP: New directorys
-  std::string home = std::getenv("HOME");
-  std::string save_path = home + "/m300_grabbed_data_";
-  FFDS::TOOLS::shellRm(save_path);
+  FFDS::TOOLS::shellRm(save_path_);
 
-  FFDS::TOOLS::shellMkdir(save_path);
-  FFDS::TOOLS::shellMkdir(save_path + "/ir");
-  FFDS::TOOLS::shellMkdir(save_path + "/rgb");
+  FFDS::TOOLS::shellMkdir(save_path_);
+  FFDS::TOOLS::shellMkdir(save_path_ + "/ir");
+  FFDS::TOOLS::shellMkdir(save_path_ + "/rgb");
 
   // STEP: New files
-  FFDS::TOOLS::FileWritter gps_writter(save_path + "/gps.csv", 9);
-  FFDS::TOOLS::FileWritter att_writter(save_path + "/att.csv", 9);
-  FFDS::TOOLS::FileWritter gimbal_angle_writter(save_path + "/gimbal_angle.csv",
-                                                9);
-  FFDS::TOOLS::FileWritter local_pose_writter(save_path + "/local_pose.csv", 9);
-  FFDS::TOOLS::FileWritter time_writter(save_path + "/time_stamp.csv", 9);
+  FFDS::TOOLS::FileWritter gps_writter(save_path_ + "/gps.csv", 9);
+  FFDS::TOOLS::FileWritter att_writter(save_path_ + "/att.csv", 9);
+  FFDS::TOOLS::FileWritter gimbal_angle_writter(
+      save_path_ + "/gimbal_angle.csv", 9);
+  FFDS::TOOLS::FileWritter local_pose_writter(save_path_ + "/local_pose.csv",
+                                              9);
+  FFDS::TOOLS::FileWritter time_writter(save_path_ + "/time_stamp.csv", 9);
 
   gps_writter.new_open();
   gps_writter.write("index", "lon", "lat", "alt");
@@ -163,8 +155,8 @@ void GrabInfoReconstructionManager::Grab() {
 
     cv::Mat ir_img = grabber.GetIRImageOnce();
     cv::Mat rgb_img = grabber.GetRGBImageOnce();
-    cv::imwrite(save_path + "/ir/" + std::to_string(index) + ".png", ir_img);
-    cv::imwrite(save_path + "/rgb/" + std::to_string(index) + ".png", rgb_img);
+    cv::imwrite(save_path_ + "/ir/" + std::to_string(index) + ".png", ir_img);
+    cv::imwrite(save_path_ + "/rgb/" + std::to_string(index) + ".png", rgb_img);
 
     sensor_msgs::NavSatFix gps = grabber.GetGPSPoseOnce();
     gps_writter.write(index, gps.longitude, gps.latitude, gps.altitude);
@@ -185,10 +177,22 @@ void GrabInfoReconstructionManager::Grab() {
   }
 }
 
-
 void GrabInfoReconstructionManager::Run() {
-  /* STEP: 0 init */
+  //  STEP: 0 init
+  // set local reference position
+  ros::ServiceClient set_local_pos_ref_client_;
+  set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
+      "/set_local_pos_reference");
+  dji_osdk_ros::SetLocalPosRef set_local_pos_reference;
+  set_local_pos_ref_client_.call(set_local_pos_reference);
+  if (set_local_pos_reference.response.result) {
+    PRINT_INFO("set local position reference successfully!");
+  } else {
+    PRINT_ERROR("set local position reference failed!");
+    return;
+  }
   // TODO: set gimbal angle then
+  // reset the gimbal and camera
   FFDS::MODULES::GimbalCameraOperator gcOperator;
   if (gcOperator.resetCameraZoom() && gcOperator.resetGimbal()) {
     PRINT_INFO("reset camera and gimbal successfully!")

@@ -33,6 +33,10 @@ class GrabInfoReconstructionManager {
   ros::NodeHandle nh_;
   sensor_msgs::NavSatFix home_, center_;
 
+  // save the files
+  std::string root_path_;
+  std::string save_path_;
+
   void initWpV2Setting(
       dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr);
   void generateWpV2Actions(

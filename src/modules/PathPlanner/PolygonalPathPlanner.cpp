@@ -145,8 +145,6 @@ void PolygonalPathPlanner::FeedWp2Vec() {
       wpV2.heading = TOOLS::Rad2Deg(M_PI - abs_ang);
     }
 
-    PRINT_DEBUG("x: %lf, y: %lf, heading is: %lf", x, y, wpV2.heading);
-
     wp_v2_vec_.push_back(wpV2);
   }
 }
