@@ -89,8 +89,7 @@ class WpV2Operator {
       dji_osdk_ros::InitWaypointV2Setting *initWaypointV2SettingPtr);
 
   bool generateWaypointV2Actions(
-      dji_osdk_ros::GenerateWaypointV2Action *generateWaypointV2ActionPtr,
-      uint16_t actionNum);
+      dji_osdk_ros::GenerateWaypointV2Action *generateWaypointV2ActionPtr);
 
   bool uploadWaypointV2Mission(
       dji_osdk_ros::UploadWaypointV2Mission *uploadWaypointV2MissionPtr);

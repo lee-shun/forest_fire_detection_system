@@ -53,8 +53,7 @@ bool FFDS::MODULES::WpV2Operator::initWaypointV2Setting(
 }
 
 bool FFDS::MODULES::WpV2Operator::generateWaypointV2Actions(
-    dji_osdk_ros::GenerateWaypointV2Action *generateWaypointV2ActionPtr,
-    uint16_t actionNum) {
+    dji_osdk_ros::GenerateWaypointV2Action *generateWaypointV2ActionPtr) {
   waypointV2_generate_actions_client.call(*generateWaypointV2ActionPtr);
 
   return generateWaypointV2ActionPtr->response.result;

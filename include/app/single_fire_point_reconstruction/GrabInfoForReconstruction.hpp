@@ -22,7 +22,7 @@
 namespace FFDS {
 namespace APP {
 class GrabInfoReconstructionManager {
-  public:
+ public:
   // should run in 2 threads
   void Run();
   void Grab();
@@ -31,8 +31,10 @@ class GrabInfoReconstructionManager {
   // TODO: add multiple centers
   sensor_msgs::NavSatFix home_, center_;
 
-  void initWpSetting(
-      dji_osdk_ros::InitWaypointV2Setting *initWaypointV2SettingPtr);
+  void initWpV2Setting(
+      dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr);
+  void generateWpV2Actions(
+      dji_osdk_ros::GenerateWaypointV2Action* generateWaypointV2ActionPtr, int actionNum);
 };
 }  // namespace APP
 }  // namespace FFDS
