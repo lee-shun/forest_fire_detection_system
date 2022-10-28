@@ -15,9 +15,21 @@
 
 #include <app/single_fire_point_reconstruction/GrabInfoForReconstruction.hpp>
 #include <modules/PathPlanner/PolygonalPathPlanner.hpp>
+#include <tools/PositionHelper.hpp>
 
 namespace FFDS {
 namespace APP {
+
+GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
+  // STEP: 1 find home position
+  FFDS::TOOLS::PositionHelper posHelper;
+  home_ =  posHelper.getAverageGPS(10);
+
+  // STEP: 2 read the fire center
+  center_.altitude = 25.5387778;
+  center_.latitude = 45.4552318;
+  center_.longitude = -73.9149486;
+}
 
 void GrabInfoReconstructionManager::initWpV2Setting(
     dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr) {
@@ -92,7 +104,7 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
 }
 
 void GrabInfoReconstructionManager::Run() {
-  /* Step: 0 reset the camera and gimbal */
+  /* STEP: 0 init */
   // TODO: set gimbal angle then
   FFDS::MODULES::GimbalCameraOperator gcOperator;
   if (gcOperator.resetCameraZoom() && gcOperator.resetGimbal()) {
@@ -101,7 +113,7 @@ void GrabInfoReconstructionManager::Run() {
     PRINT_WARN("reset camera and gimbal failed!")
   }
 
-  /* Step: 1 init the wp setting, create the basic waypointV2 vector... */
+  /* STEP: 1 init the wp setting, create the basic waypointV2 vector... */
   FFDS::MODULES::WpV2Operator wpV2Operator;
   dji_osdk_ros::InitWaypointV2Setting initWaypointV2Setting_;
   initWpV2Setting(&initWaypointV2Setting_);
