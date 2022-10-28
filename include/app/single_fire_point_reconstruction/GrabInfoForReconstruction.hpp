@@ -15,6 +15,7 @@
 #ifndef INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 #define INCLUDE_APP_SINGLE_FIRE_POINT_RECONSTRUCTION_GRABINFOFORRECONSTRUCTION_HPP_
 
+#include <ros/ros.h>
 #include <modules/H20TIMUPoseGrabber/H20TIMUPoseGrabber.hpp>
 #include <modules/GimbalCameraOperator/GimbalCameraOperator.hpp>
 #include <modules/WayPointOperator/WpV2Operator.hpp>
@@ -29,6 +30,7 @@ class GrabInfoReconstructionManager {
 
  private:
   // TODO: add multiple centers
+  ros::NodeHandle nh_;
   sensor_msgs::NavSatFix home_, center_;
 
   void initWpV2Setting(

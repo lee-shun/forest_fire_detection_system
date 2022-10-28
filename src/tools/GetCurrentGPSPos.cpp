@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
 
   sensor_msgs::NavSatFix gps = posHelper.getAverageGPS(average_times);
   PRINT_INFO(
-      "current GPS position under %d average times is lon: %.8f, lat: %.8f, "
-      "alt: %.8f",
+      "current GPS position under %d average times is lon: %.9f, lat: %.9f, "
+      "alt: %.9f",
       average_times, gps.longitude, gps.latitude, gps.altitude);
 
   FFDS::TOOLS::FileWritter gpsWriter("fire_average_gps_pos.csv", 8);

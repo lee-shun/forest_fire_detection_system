@@ -34,10 +34,10 @@ FFDS::APP::GrabDataDepthEstimationManager::GrabDataDepthEstimationManager() {
           "obtain_release_control_authority");
 
   // for manual mode
-    grab_run_.store(true);
+  grab_run_.store(true);
 }
 
-void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
+void FFDS::APP::GrabDataDepthEstimationManager::Grab(int folder_number) {
   // STEP: set local reference position
   ros::ServiceClient set_local_pos_ref_client_;
   set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
@@ -54,7 +54,7 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
   // STEP: New directorys
   std::string home = std::getenv("HOME");
   std::string save_path =
-      home + "/m300_grabbed_data_" + std::to_string(save_num);
+      home + "/m300_grabbed_data_" + std::to_string(folder_number);
   FFDS::TOOLS::shellRm(save_path);
 
   FFDS::TOOLS::shellMkdir(save_path);
@@ -62,16 +62,21 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
   FFDS::TOOLS::shellMkdir(save_path + "/rgb");
 
   // STEP: New files
-  FFDS::TOOLS::FileWritter gps_writter(save_path + "/gps.csv", 8);
-  FFDS::TOOLS::FileWritter att_writter(save_path + "/att.csv", 8);
-  FFDS::TOOLS::FileWritter local_pose_writter(save_path + "/local_pose.csv", 8);
-  FFDS::TOOLS::FileWritter time_writter(save_path + "/time_stamp.csv", 8);
+  FFDS::TOOLS::FileWritter gps_writter(save_path + "/gps.csv", 9);
+  FFDS::TOOLS::FileWritter att_writter(save_path + "/att.csv", 9);
+  FFDS::TOOLS::FileWritter gimbal_angle_writter(save_path + "/gimbal_angle.csv",
+                                                9);
+  FFDS::TOOLS::FileWritter local_pose_writter(save_path + "/local_pose.csv", 9);
+  FFDS::TOOLS::FileWritter time_writter(save_path + "/time_stamp.csv", 9);
 
   gps_writter.new_open();
   gps_writter.write("index", "lon", "lat", "alt");
 
   att_writter.new_open();
   att_writter.write("index", "w", "x", "y", "z");
+
+  gimbal_angle_writter.new_open();
+  gimbal_angle_writter.write("index", "pitch", "roll", "yaw");
 
   local_pose_writter.new_open();
   local_pose_writter.write("index", "x", "y", "z");
@@ -106,7 +111,10 @@ void FFDS::APP::GrabDataDepthEstimationManager::Grab(int save_num) {
     att_writter.write(index, att.quaternion.w, att.quaternion.x,
                       att.quaternion.y, att.quaternion.z);
 
-    ros::Rate(20).sleep();
+    auto ga = grabber.GetGimbalOnce();
+    gimbal_angle_writter.write(index, ga.vector.x, ga.vector.y, ga.vector.z);
+
+    ros::Rate(10).sleep();
     ++index;
   }
 }

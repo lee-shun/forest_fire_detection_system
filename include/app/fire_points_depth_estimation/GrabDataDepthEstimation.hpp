@@ -30,7 +30,7 @@ class GrabDataDepthEstimationManager {
  public:
   GrabDataDepthEstimationManager();
   void run(const float desired_height, const float desired_length);
-  void Grab(int save_num);
+  void Grab(int folder_number);
 
  private:
   bool MoveByPosOffset(dji_osdk_ros::FlightTaskControl &task,

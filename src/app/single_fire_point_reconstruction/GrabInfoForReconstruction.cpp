@@ -16,6 +16,7 @@
 #include <app/single_fire_point_reconstruction/GrabInfoForReconstruction.hpp>
 #include <modules/PathPlanner/PolygonalPathPlanner.hpp>
 #include <tools/PositionHelper.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace FFDS {
 namespace APP {
@@ -103,6 +104,88 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
   }
 }
 
+void GrabInfoReconstructionManager::Grab() {
+  // STEP: set local reference position
+  ros::ServiceClient set_local_pos_ref_client_;
+  set_local_pos_ref_client_ = nh_.serviceClient<dji_osdk_ros::SetLocalPosRef>(
+      "/set_local_pos_reference");
+  dji_osdk_ros::SetLocalPosRef set_local_pos_reference;
+  set_local_pos_ref_client_.call(set_local_pos_reference);
+  if (set_local_pos_reference.response.result) {
+    PRINT_INFO("Set local position reference successfully!");
+  } else {
+    PRINT_ERROR("Set local position reference failed!");
+    return;
+  }
+
+  // STEP: New directorys
+  std::string home = std::getenv("HOME");
+  std::string save_path = home + "/m300_grabbed_data_";
+  FFDS::TOOLS::shellRm(save_path);
+
+  FFDS::TOOLS::shellMkdir(save_path);
+  FFDS::TOOLS::shellMkdir(save_path + "/ir");
+  FFDS::TOOLS::shellMkdir(save_path + "/rgb");
+
+  // STEP: New files
+  FFDS::TOOLS::FileWritter gps_writter(save_path + "/gps.csv", 9);
+  FFDS::TOOLS::FileWritter att_writter(save_path + "/att.csv", 9);
+  FFDS::TOOLS::FileWritter gimbal_angle_writter(save_path + "/gimbal_angle.csv",
+                                                9);
+  FFDS::TOOLS::FileWritter local_pose_writter(save_path + "/local_pose.csv", 9);
+  FFDS::TOOLS::FileWritter time_writter(save_path + "/time_stamp.csv", 9);
+
+  gps_writter.new_open();
+  gps_writter.write("index", "lon", "lat", "alt");
+
+  att_writter.new_open();
+  att_writter.write("index", "w", "x", "y", "z");
+
+  gimbal_angle_writter.new_open();
+  gimbal_angle_writter.write("index", "pitch", "roll", "yaw");
+
+  local_pose_writter.new_open();
+  local_pose_writter.write("index", "x", "y", "z");
+
+  time_writter.new_open();
+  time_writter.write("index", "sec", "nsec");
+
+  FFDS::MODULES::H20TIMUPoseGrabber grabber;
+
+  int index = 0;
+  while (ros::ok()) {
+    if (FFDS::MODULES::H20TIMUPoseGrabber::MessageFilterStatus::EMPTY ==
+        grabber.UpdateOnce())
+      continue;
+
+    ros::Time time = ros::Time::now();
+    time_writter.write(index, time.sec, time.nsec);
+
+    cv::Mat ir_img = grabber.GetIRImageOnce();
+    cv::Mat rgb_img = grabber.GetRGBImageOnce();
+    cv::imwrite(save_path + "/ir/" + std::to_string(index) + ".png", ir_img);
+    cv::imwrite(save_path + "/rgb/" + std::to_string(index) + ".png", rgb_img);
+
+    sensor_msgs::NavSatFix gps = grabber.GetGPSPoseOnce();
+    gps_writter.write(index, gps.longitude, gps.latitude, gps.altitude);
+
+    geometry_msgs::PointStamped local = grabber.GetLocalPosOnce();
+    local_pose_writter.write(index, local.point.x, local.point.y,
+                             local.point.z);
+
+    geometry_msgs::QuaternionStamped att = grabber.GetAttOnce();
+    att_writter.write(index, att.quaternion.w, att.quaternion.x,
+                      att.quaternion.y, att.quaternion.z);
+
+    auto ga = grabber.GetGimbalOnce();
+    gimbal_angle_writter.write(index, ga.vector.x, ga.vector.y, ga.vector.z);
+
+    ros::Rate(10).sleep();
+    ++index;
+  }
+}
+
+
 void GrabInfoReconstructionManager::Run() {
   /* STEP: 0 init */
   // TODO: set gimbal angle then
@@ -164,6 +247,9 @@ void GrabInfoReconstructionManager::Run() {
     return;
   }
   ros::Duration(1.0).sleep();
+
+  /* NOTE: the mission call will immediately finish, won't stop here */
+  Grab();
 }
 
 }  // namespace APP
