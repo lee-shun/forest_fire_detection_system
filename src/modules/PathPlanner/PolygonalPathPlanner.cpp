@@ -115,7 +115,6 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   ref[1] = center_.longitude;
   ref[2] = center_.altitude;
 
-  // TODO: or I can use the interest point...
   for (int i = 0; i < local_pos_vec_.size(); ++i) {
     MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
 
@@ -131,20 +130,22 @@ void PolygonalPathPlanner::FeedWp2Vec() {
 
     // NOTE: calculation!
     float x = local_pos_vec_[i].x, y = local_pos_vec_[i].y;
-    float abs_ang = std::atan2(y, x);
+    float abs_ang = std::abs(std::atan2(y, x));
     if (x > 0 && y > 0) {
       // 1
-      wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
+      wpV2.heading = TOOLS::Rad2Deg(abs_ang - M_PI);
     } else if (x < 0 && y > 0) {
       // 2
-      wpV2.heading = TOOLS::Deg2Rad(abs_ang - M_PI);
+      wpV2.heading = TOOLS::Rad2Deg(abs_ang - M_PI);
     } else if (x < 0 && y < 0) {
       // 3
-      wpV2.heading = TOOLS::Deg2Rad(M_PI - abs_ang);
+      wpV2.heading = TOOLS::Rad2Deg(M_PI - abs_ang);
     } else {
       // 4
-      wpV2.heading = TOOLS::Deg2Rad(M_PI - abs_ang);
+      wpV2.heading = TOOLS::Rad2Deg(M_PI - abs_ang);
     }
+
+    PRINT_DEBUG("x: %lf, y: %lf, heading is: %lf", x, y, wpV2.heading);
 
     wp_v2_vec_.push_back(wpV2);
   }
