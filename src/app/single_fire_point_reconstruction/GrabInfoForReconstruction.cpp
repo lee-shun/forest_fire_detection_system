@@ -157,4 +157,8 @@ void GrabInfoReconstructionManager::Run() {
 }  // namespace APP
 }  // namespace FFDS
 
-int main(int argc, char** argv) { return 0; }
+int main(int argc, char** argv) {
+  FFDS::APP::GrabInfoReconstructionManager manager;
+  manager.Run();
+  return 0;
+}
