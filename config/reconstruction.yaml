@@ -1,0 +1,15 @@
+# TODO: center of the fire, change it first.
+
+cen_long: -73.9149486
+cen_lat: 45.4552318
+cen_alt: 25.5387778
+
+
+# polygonal_path shape
+radius: 15.0
+num_of_wps: 20
+height: 15.0
+
+# grab rate
+grat_rate: 10
+

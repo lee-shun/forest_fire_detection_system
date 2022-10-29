@@ -1,14 +1,14 @@
 # original(full) image szie 1920 x 1440 but after using recording, it will
-# change to 1920 x 1080 !!!!
+# change to 1920 x 1080 !!!! then the u: 156 l: 926
 full_img_width: 1920
-full_img_height: 1080
-# full_img_height: 1440
+# full_img_height: 1080
+full_img_height: 1440
 
 # pure image position in the full image by testing!
-# upper_bound: 336
-# lower_bound: 1106
-upper_bound: 156
-lower_bound: 926
+upper_bound: 336
+lower_bound: 1106
+# upper_bound: 156
+# lower_bound: 926
 left_bound: 0
 right_bound: 1920
 

@@ -16,20 +16,31 @@
 #include <app/single_fire_point_reconstruction/GrabInfoForReconstruction.hpp>
 #include <modules/PathPlanner/PolygonalPathPlanner.hpp>
 #include <tools/PositionHelper.hpp>
+#include <tools/SystemLib.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace FFDS {
 namespace APP {
 
 GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
-  // STEP: 1 find home position
+  // STEP: 0 find home position
   FFDS::TOOLS::PositionHelper posHelper;
   home_ = posHelper.getAverageGPS(10);
 
-  // STEP: 2 read the fire center
-  center_.altitude = 25.5387778;
-  center_.latitude = 45.4552318;
-  center_.longitude = -73.9149486;
+  // STEP: 1 read the parameters
+  const std::string package_path =
+      ros::package::getPath("forest_fire_detection_system");
+  const std::string config_path = package_path + "/config/reconstruction.yaml";
+  PRINT_INFO("Load parameters from:%s", config_path.c_str());
+  YAML::Node node = YAML::LoadFile(config_path);
+
+  center_.longitude = TOOLS::getParam(node, "cen_long", home_.longitude);
+  center_.latitude = TOOLS::getParam(node, "cen_lat", home_.latitude);
+  center_.altitude = TOOLS::getParam(node, "cen_alt", home_.altitude);
+  radius_ = TOOLS::getParam(node, "radius", 15.0);
+  num_of_wps_ = TOOLS::getParam(node, "num_of_wps", 20);
+  height_ = TOOLS::getParam(node, "height", 15.0);
+  grab_rate_ = TOOLS::getParam(node, "grab_rate", 10.0);
 
   // STEP: 3 generate the save path
   root_path_ = std::getenv("HOME");
@@ -40,7 +51,8 @@ GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
 void GrabInfoReconstructionManager::initWpV2Setting(
     dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr) {
   // should be changeable about the numbers and the centers
-  MODULES::PolygonalPathPlanner planner(home_, center_, 20, 15, 15);
+  MODULES::PolygonalPathPlanner planner(home_, center_, num_of_wps_, radius_,
+                                        height_);
   auto wp_v2_vec = planner.getWpV2Vec();
   auto local_pos_vec = planner.getLocalPosVec();
 
@@ -172,7 +184,7 @@ void GrabInfoReconstructionManager::Grab() {
     auto ga = grabber.GetGimbalOnce();
     gimbal_angle_writter.write(index, ga.vector.x, ga.vector.y, ga.vector.z);
 
-    ros::Rate(10).sleep();
+    ros::Rate(grab_rate_).sleep();
     ++index;
   }
 }

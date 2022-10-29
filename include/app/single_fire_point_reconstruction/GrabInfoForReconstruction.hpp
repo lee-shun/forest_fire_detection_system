@@ -29,9 +29,14 @@ class GrabInfoReconstructionManager {
   void Grab();
 
  private:
-  // TODO: add multiple centers
+  // parameters
+  sensor_msgs::NavSatFix center_;
+  float radius_, height_;
+  int num_of_wps_;
+  float grab_rate_;
+
   ros::NodeHandle nh_;
-  sensor_msgs::NavSatFix home_, center_;
+  sensor_msgs::NavSatFix home_;
 
   // save the files
   std::string root_path_;
