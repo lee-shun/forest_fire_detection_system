@@ -88,6 +88,8 @@ void PolygonalPathPlanner::GenLocalPos(const float height) {
   local_pos_vec_.push_back(
       COMMON::LocalPosition<double>(start_loc[0], start_loc[1], height));
 
+  // clear the vec first.
+  local_pos_vec_.clear();
   float each_rad = 2 * M_PI / num_of_wps_;
   float cur_rad = 0.0;
   while (cur_rad + each_rad <= 2 * M_PI) {
@@ -116,6 +118,8 @@ void PolygonalPathPlanner::FeedWp2Vec() {
   ref[1] = center_.longitude;
   ref[2] = center_.altitude;
 
+  // clear the vec first
+  wp_v2_vec_.clear();
   for (int i = 0; i < local_pos_vec_.size(); ++i) {
     MODULES::WpV2Operator::setWaypointV2Defaults(&wpV2);
 
