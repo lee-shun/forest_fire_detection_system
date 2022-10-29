@@ -26,6 +26,7 @@ std::vector<dji_osdk_ros::WaypointV2>& PolygonalPathPlanner::getWpV2Vec() {
   return wp_v2_vec_;
 }
 
+// BUG: here double line of the local pos!
 std::vector<FFDS::COMMON::LocalPosition<double>>&
 PolygonalPathPlanner::getLocalPosVec() {
   GenLocalPos(height_);
