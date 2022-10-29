@@ -31,7 +31,7 @@ class GrabInfoReconstructionManager {
  private:
   // parameters
   sensor_msgs::NavSatFix center_;
-  float radius_, height_;
+  float radius_, height_, velocity_;
   int num_of_wps_;
   float grab_rate_;
 

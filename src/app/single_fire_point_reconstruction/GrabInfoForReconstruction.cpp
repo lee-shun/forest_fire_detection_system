@@ -40,6 +40,7 @@ GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
   radius_ = TOOLS::getParam(node, "radius", 15.0);
   num_of_wps_ = TOOLS::getParam(node, "num_of_wps", 20);
   height_ = TOOLS::getParam(node, "height", 15.0);
+  velocity_ = TOOLS::getParam(node, "velocity", 0.5);
   grab_rate_ = TOOLS::getParam(node, "grab_rate", 10.0);
 
   // STEP: 3 generate the save path
@@ -52,7 +53,7 @@ void GrabInfoReconstructionManager::initWpV2Setting(
     dji_osdk_ros::InitWaypointV2Setting* initWaypointV2SettingPtr) {
   // should be changeable about the numbers and the centers
   MODULES::PolygonalPathPlanner planner(home_, center_, num_of_wps_, radius_,
-                                        height_);
+                                        height_, velocity_);
   auto wp_v2_vec = planner.getWpV2Vec();
   auto local_pos_vec = planner.getLocalPosVec();
 
@@ -85,7 +86,7 @@ void GrabInfoReconstructionManager::initWpV2Setting(
 
   initWaypointV2SettingPtr->request.waypointV2InitSettings.maxFlightSpeed = 2;
   initWaypointV2SettingPtr->request.waypointV2InitSettings.autoFlightSpeed =
-      0.2;
+      velocity_;
 
   initWaypointV2SettingPtr->request.waypointV2InitSettings
       .exitMissionOnRCSignalLost = 1;
@@ -124,8 +125,6 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
 
 void GrabInfoReconstructionManager::Grab() {
   // STEP: New directorys
-  FFDS::TOOLS::shellRm(save_path_);
-
   FFDS::TOOLS::shellMkdir(save_path_);
   FFDS::TOOLS::shellMkdir(save_path_ + "/ir");
   FFDS::TOOLS::shellMkdir(save_path_ + "/rgb");

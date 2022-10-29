@@ -145,6 +145,9 @@ void PolygonalPathPlanner::FeedWp2Vec() {
       wpV2.heading = TOOLS::Rad2Deg(M_PI - abs_ang);
     }
 
+    // STEP: 3 set the velocity
+    wpV2.autoFlightSpeed = velocity_;
+
     wp_v2_vec_.push_back(wpV2);
   }
 }

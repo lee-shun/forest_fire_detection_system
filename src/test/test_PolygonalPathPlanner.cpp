@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   center.latitude = 45.4552318;
   center.longitude = -73.9149486;
 
-  FFDS::MODULES::PolygonalPathPlanner planner(home, center, 20, 15.0, 15.0);
+  FFDS::MODULES::PolygonalPathPlanner planner(home, center, 20, 15.0, 15.0, 0.5);
   auto waypointVec = planner.getWpV2Vec();
 
   FFDS::TOOLS::GoogleEarthPath path("/home/ls/polygonal_path.kml", "polygonal_path");

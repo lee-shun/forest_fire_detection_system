@@ -5,11 +5,12 @@ cen_lat: 45.4552318
 cen_alt: 25.5387778
 
 
-# polygonal_path shape
+# polygonal_path mission
 radius: 15.0
 num_of_wps: 20
 height: 15.0
+velocity: 0.5
 
 # grab rate
-grat_rate: 10
+grab_rate: 10
 
