@@ -47,6 +47,10 @@ GrabInfoReconstructionManager::GrabInfoReconstructionManager() {
   root_path_ = std::getenv("HOME");
   save_path_ = root_path_ + "/m300_grabbed_data_";
   FFDS::TOOLS::shellRm(save_path_);
+  // STEP: New directorys
+  FFDS::TOOLS::shellMkdir(save_path_);
+  FFDS::TOOLS::shellMkdir(save_path_ + "/ir");
+  FFDS::TOOLS::shellMkdir(save_path_ + "/rgb");
 }
 
 void GrabInfoReconstructionManager::initWpV2Setting(
@@ -124,11 +128,6 @@ void GrabInfoReconstructionManager::generateWpV2Actions(
 }
 
 void GrabInfoReconstructionManager::Grab() {
-  // STEP: New directorys
-  FFDS::TOOLS::shellMkdir(save_path_);
-  FFDS::TOOLS::shellMkdir(save_path_ + "/ir");
-  FFDS::TOOLS::shellMkdir(save_path_ + "/rgb");
-
   // STEP: New files
   FFDS::TOOLS::FileWritter gps_writter(save_path_ + "/gps.csv", 9);
   FFDS::TOOLS::FileWritter att_writter(save_path_ + "/att.csv", 9);
