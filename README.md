@@ -1,51 +1,36 @@
 # Forest Fire Detection System
 
-## <p align="center">![flight test 1](./document/flight_test_res/flight_test_1.gif)</p>
+This ROS package is designed for early wildfire detection, geolocation and monitoring.
 
-**In this work, we implemented an online early forest fire detection system based on drone platform.**
+## Functions
 
-- Multiple types of sensors are employed to detect multiple features of the fire flame and smoke.
+### Early Wildfire Flame and Smoke Segmentation
 
-- Both deep convolutional neural network (CNN) and traditional computer vision algorithms are implemented to process the
-  visual images (RGB images) and infrared images (thermal images).
+### Multi-view Geometry-based Wildfire Spot Geolocation
 
-- Other additional algorithms are also implemented to finish the forest fire detection and geolocation task.
+### Wildfire Local Environment 3D reconstruction
 
-## System architecture
+## Outdoor Flight Test Videos
 
-### <div align=center>![system architecture](./document/flight_test_res/system.png)</div>
+- [Early Wildfire Flame and Smoke Segmentation](https://www.youtube.com/watch?v=dQG73LW8jxQ)
 
-## Features
+> M300 drone flies along the defined zigzag path, while the attention gate U-net
+> is implemented to detect and segment the suspect wildfire.
 
-| functions                        | results                                              |
-|----------------------------------|------------------------------------------------------|
-| path planning                    | ![path](./document/flight_test_res/trajectory_1.png) |
-| forest fire image classification | ![path](./document/flight_test_res/class.png)        |
-| forest fire image segmentation   | ![path](./document/flight_test_res/mask.png)         |
-| gimbal control                   | ![path](./document/flight_test_res/gimbal.png)       |
-| fire point geolocation           | ![path](./document/flight_test_res/locate.png)       |
+- [Multi-view Geometry-based Wildfire Spot Geolocation](https://www.youtube.com/watch?v=Sk7nWwYyFZI)
 
-## Hardware Platform
+> 1. Once the suspect fire is detected, M300 will fly from left to the right. In
+>    the meantime, a monocular SLAM is running to acquire the precise camera
+>    pose, the GPS information is used to correct the scale of the poses.
+> 2. Based-on the triangulation of the fire zone, the distance can be estimated.
+>    Then, the fire can be geolocated by with the gimbal angle.
 
-- DJI M300 RTK
-- H20T Camera
-- Nvidia NX on board computer
+- [Wildfire Local Environment 3D reconstruction](hhh)
 
-## Usage
-
-1. install [DJI OnboardSDK](https://developer.dji.com/onboard-api-reference/index.html)
-2. install [ROS](https://www.ros.org/), only `melodic` version is well tested and recommneded.
-3. `mkdir -p ~/catkin_ws/src`
-4. `cd ~/catkin_ws/src/ && catkin_init_workspace`
-5. `git clone https://github.com/lee-shun/forest_fire_detection_system.git`
-6. `git clone https://github.com/lee-shun/dji_osdk_ros_cv4`
-7. `cd ~/catkin_ws/ && catkin build`
-
-## Outdoor flighht test videos
-
-[Flight test 1 on Youtube](https://www.youtube.com/watch?v=dQG73LW8jxQ)
+> Finally, M300 will fly along a circle shape of the flight path to record the
+> scene of the local environment around the wildfire spot with the H20T zoom
+> camera.
 
 ## Copyright
 
 **Copyright (C) 2021 Concordia NAVlab. All rights reserved.**
-
