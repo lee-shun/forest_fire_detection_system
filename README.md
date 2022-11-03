@@ -2,13 +2,40 @@
 
 This ROS package is designed for early wildfire detection, geolocation and monitoring.
 
+## System architecture
+
+### <div align=center>![system architecture](./document/flight_test_res/system.png)</div>
+
 ## Functions
 
 ### Early Wildfire Flame and Smoke Segmentation
 
+| functions                        | results                                              |
+| -------------------------------- | ---------------------------------------------------- |
+| path planning                    | ![path](./document/flight_test_res/trajectory_1.png) |
+| forest fire image classification | ![path](./document/flight_test_res/class.png)        |
+| forest fire image segmentation   | ![path](./document/flight_test_res/mask.png)         |
+| gimbal control                   | ![path](./document/flight_test_res/gimbal.png)       |
+| fire point geolocation           | ![path](./document/flight_test_res/locate.png)       |
+
 ### Multi-view Geometry-based Wildfire Spot Geolocation
 
+[Early wildfire spot perception methods](https://github.com/ConcordiaNAVlab/early_wildfire_perception)
+
+| functions                                             |                                                                |
+| ---------------------------------------------------- | -------------------------------------------------------------- |
+| Attention gate U-net wildfire segmentation           | ![path](./document/flight_test_res/figure_attentionunet-1.png) |
+| Trianglulation-based wildfire point depth estimation | ![path](./document/flight_test_res/video_05.png)               |
+| Visible-infrared camera system calibration           | ![path](./document/flight_test_res/init_registration-1.png)    |
+| Model-based wide fire point registration             | ![path](./document/flight_test_res/video_04.png)               |
+
 ### Wildfire Local Environment 3D reconstruction
+
+You can also compare the reconstruction results with [google earth](https://earth.google.com/web/@45.4552362,-73.91587166,25.22623597a,99.51716005d,35y,0.00000001h,49.33917715t,0r).
+
+| SFM with `colmap`                           | Reconstruction with `OpenMVS`               |
+| ------------------------------------------- | ------------------------------------------- |
+| ![img](./document/flight_test_res/3d_0.png) | ![img](./document/flight_test_res/3d_1.png) |
 
 ## Outdoor Flight Test Videos
 
