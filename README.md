@@ -36,6 +36,7 @@ You can also compare the reconstruction results with [google earth](https://eart
 | SFM with `colmap`                           | Reconstruction with `OpenMVS`               |
 | ------------------------------------------- | ------------------------------------------- |
 | ![img](./document/flight_test_res/3d_0.png) | ![img](./document/flight_test_res/3d_1.png) |
+| ![img](./document/flight_test_res/colmap.gif) | ![img](./document/flight_test_res/mvs.gif) |
 
 ## Outdoor Flight Test Videos
 
