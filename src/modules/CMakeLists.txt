@@ -31,5 +31,4 @@ target_link_libraries(
   ${cv_bridge_LIBRARIES}
   dji_osdk_ros
   ${catkin_LIBRARIES}
-  ${VO_THIRD_PARTY_LIBS}
 )

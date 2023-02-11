@@ -26,7 +26,6 @@ foreach(EACH_SRC ${SRC_LIST})
     ${EACH_EXE}
     ${catkin_LIBRARIES}
     ${PROJECT_NAME}_module
-    # ${PATH_PLAN_THIRD_PARTY_LIBS}
   )
 
 endforeach()
