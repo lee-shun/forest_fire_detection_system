@@ -59,6 +59,19 @@ You can also compare the reconstruction results with [google earth](https://eart
 > scene of the local environment around the wildfire spot with the H20T zoom
 > camera.
 
+## Related Paper
+```tex
+@INPROCEEDINGS{9836119,
+  author={Li, Shun and Qiao, Linhan and Zhang, Youmin and Yan, Jun},
+  booktitle={2022 International Conference on Unmanned Aircraft Systems (ICUAS)}, 
+  title={An Early Forest Fire Detection System Based on DJI M300 Drone and H20T Camera}, 
+  year={2022},
+  volume={},
+  number={},
+  pages={932-937},
+  doi={10.1109/ICUAS54217.2022.9836119}}
+```
+
 ## Copyright
 
 **Copyright (C) 2021 Concordia NAVlab. All rights reserved.**
