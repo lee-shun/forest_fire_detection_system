@@ -17,7 +17,7 @@
 
 file(GLOB_RECURSE SRC_LIST *.cpp)
 
-foreach(EACH_SRC ${SRC_LIST})
+foreach(EACH_SRC ${SRC_LIST}) 
 
   string(REGEX REPLACE ".+/(.+)\\..*" "\\1" EACH_EXE ${EACH_SRC})
 
