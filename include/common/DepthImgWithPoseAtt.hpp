@@ -20,7 +20,6 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
 #include <opencv2/core/core.hpp>
-#include <opencv2/viz/widgets.hpp>
 
 namespace FFDS {
 namespace COMMON {
