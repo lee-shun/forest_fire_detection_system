@@ -15,15 +15,19 @@
  *******************************************************************************/
 
 #include <ros/ros.h>
-#include <utility>
 
 namespace FFDS {
 namespace APP {
 class PreciselyWaterDropper {
  private:
+  int target_x_;
+  int target_y_;
+  int ctrl_times_;
+  int ctrl_threshold_;
+
  public:
-  PreciselyWaterDropper(const int ctrl_times, const int target_x,
-                        const int targt_y);
+  PreciselyWaterDropper(const int target_x, const int target_y,
+                        const int ctrl_times, const int ctrl_threshold);
   void run();
 };
 }  // namespace APP

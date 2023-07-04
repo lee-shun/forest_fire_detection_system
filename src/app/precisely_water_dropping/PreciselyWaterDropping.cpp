@@ -16,12 +16,18 @@
 
 #include "app/precisely_water_dropping/PreciselyWaterDropping.hpp"
 #include "modules/GimbalCameraOperator/GimbalCameraOperator.hpp"
+#include "modules/InfraredDroneController/InfraredDroneController.hpp"
 
 namespace FFDS {
 namespace APP {
-PreciselyWaterDropper::PreciselyWaterDropper(const int ctrl_times,
-                                             const int target_x,
-                                             const int targt_y) {}
+PreciselyWaterDropper::PreciselyWaterDropper(const int target_x,
+                                             const int target_y,
+                                             const int ctrl_times,
+                                             const int ctrl_threshold)
+    : target_x_(target_x),
+      target_y_(target_y),
+      ctrl_times_(ctrl_times),
+      ctrl_threshold_(ctrl_threshold) {}
 void PreciselyWaterDropper::run() {
   // STEP: 0 reset the gimbal
   MODULES::GimbalCameraOperator gimbal_operator;
@@ -42,12 +48,27 @@ void PreciselyWaterDropper::run() {
 
   // STEP: 2 control the UAV to fly  along x and y with the target point on
   // image.
+  MODULES::InfraredDroneController drone_controller;
+  if (drone_controller.ctrlDroneMoveByTarget(target_x_, target_y_, ctrl_times_,
+                                             ctrl_threshold_)) {
+    PRINT_INFO("water can be drop now!")
+  } else {
+    PRINT_WARN("need more control times or a looser threshold!");
+  }
 
-}  // namespace APP
-}  // namespace APP
+  // STEP: 3 confirm to drop water by hand.
 
-// TODO(lee-shun): modify this as a server, provide the water dropping service.
+  std::string water_dropped;
+  std::cin >> water_dropped;
+
+  // STEP: 4 return home!
+}
+}  // namespace APP
+}  // namespace FFDS
+
 int main(int agrc, char* argv[]) {
-  FFDS::APP::PreciselyWaterDropper dropper(10, 200, 200);
+  // STEP：1 fly around the water and then come close to the water...
+  // STEP：2 precisely drop the water.
+  FFDS::APP::PreciselyWaterDropper dropper(200, 200, 10, 10);
   dropper.run();
 }
