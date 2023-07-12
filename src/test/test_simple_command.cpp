@@ -15,6 +15,7 @@
  ******************************************************************************/
 
 #include <test/test_simple_command.hpp>
+#include "tools/PrintControl/PrintCtrlMacro.h"
 
 TestSimpleCommand::TestSimpleCommand() {
   vehicle_att_subscriber = nh.subscribe<geometry_msgs::QuaternionStamped>(

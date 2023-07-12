@@ -16,7 +16,7 @@
 
 #include "app/precisely_water_dropping/PreciselyWaterDropping.hpp"
 #include "modules/GimbalCameraOperator/GimbalCameraOperator.hpp"
-#include "modules/InfraredDroneController/InfraredDroneController.hpp"
+#include "modules/DroneMovementController/DroneMovementController.hpp"
 
 namespace FFDS {
 namespace APP {
@@ -48,9 +48,9 @@ void PreciselyWaterDropper::run() {
 
   // STEP: 2 control the UAV to fly  along x and y with the target point on
   // image.
-  MODULES::InfraredDroneController drone_controller;
-  if (drone_controller.ctrlDroneMoveByTarget(target_x_, target_y_, ctrl_times_,
-                                             ctrl_threshold_)) {
+  MODULES::DroneMovementController drone_controller;
+  if (drone_controller.ctrlDroneMoveByImgTarget(target_x_, target_y_,
+                                                ctrl_times_, ctrl_threshold_)) {
     PRINT_INFO("water can be drop now!")
   } else {
     PRINT_WARN("need more control times or a looser threshold!");
@@ -58,10 +58,24 @@ void PreciselyWaterDropper::run() {
 
   // STEP: 3 confirm to drop water by hand.
 
-  std::string water_dropped;
-  std::cin >> water_dropped;
+  std::cout << "Did you finish with water dropping? [y/n]" << std::endl;
+  while (true) {
+    std::string water_dropped;
+    std::cin >> water_dropped;
+    if (water_dropped == "y") {
+      PRINT_INFO("Water dropped, return home now!");
+      break;
+    } else if (water_dropped == "n") {
+      PRINT_INFO("Water dropped, but not good, return home anyway!");
+      break;
+    } else {
+      PRINT_WARN("wrong input, please input again!");
+    }
+  }
 
-  // STEP: 4 return home!
+  // STEP: 4 return home & land.
+  drone_controller.ctrlDroneReturnHome();
+  drone_controller.ctrlDroneLand();
 }
 }  // namespace APP
 }  // namespace FFDS
