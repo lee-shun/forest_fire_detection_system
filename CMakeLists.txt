@@ -64,7 +64,7 @@ add_definitions(-DADVANCED_SENSING)
 # Eigen
 include_directories("/usr/include/eigen3")
 
-# OpenCV 4.5
+# OpenCV 4.5 
 find_package(OpenCV 4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
