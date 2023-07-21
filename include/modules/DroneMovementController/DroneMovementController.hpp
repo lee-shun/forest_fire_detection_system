@@ -65,8 +65,36 @@ class DroneMovementController {
                              const dji_osdk_ros::JoystickCommand &offsetDesired,
                              float posThresholdInM, float yawThresholdInDeg);
 
-  bool ctrlDroneReturnHome();
-  bool ctrlDroneLand();
+  bool ctrlDroneReturnHome() {
+    /* 4. Go home */
+    ROS_INFO_STREAM("going home now");
+    control_task.request.task =
+        dji_osdk_ros::FlightTaskControl::Request::TASK_GOHOME;
+    task_control_client.call(control_task);
+    if (control_task.response.result == true) {
+      ROS_INFO_STREAM("GO home successful");
+      return true;
+    } else {
+      ROS_INFO_STREAM("Go home failed.");
+      return false;
+    }
+  }
+
+  bool ctrlDroneLand() {
+    /* 5. Landing */
+    control_task.request.task =
+        dji_osdk_ros::FlightTaskControl::Request::TASK_LAND;
+    ROS_INFO_STREAM(
+        "Landing request sending ... need your confirmation on the remoter!");
+    task_control_client.call(control_task);
+    if (control_task.response.result == true) {
+      ROS_INFO_STREAM("Land task successful");
+      return true;
+    } else {
+      ROS_INFO_STREAM("Land task failed.");
+      return false;
+    }
+  }
 
  private:
   ros::NodeHandle nh;

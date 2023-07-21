@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*- #
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 #   Copyright (C) 2021 Concordia NAVlab. All rights reserved.
 #
@@ -15,24 +15,22 @@
 #
 #   @Description:
 #
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
+import threading
+from cv_bridge import CvBridge, CvBridgeError
+from heat_ir_threshold_locater import HeatIrThresholdLocater
+from fire_smoke_rgb_resnet_classifier import FireSmokeRgbResnetClassifier
+from sensor_msgs.msg import Image
+import message_filters
+from forest_fire_detection_system.msg import SingleFireFuse
+import rospy
+from tools.custom_logger import Log
 import os
 import sys
 
 PKG_PATH = os.path.expanduser('~/catkin_ws/src/forest_fire_detection_system/')
 sys.path.append(PKG_PATH + 'scripts/')
-
-from tools.custom_logger import Log
-
-import rospy
-from forest_fire_detection_system.msg import SingleFireFuse
-import message_filters
-from sensor_msgs.msg import Image
-from fire_smoke_rgb_resnet_classifier import FireSmokeRgbResnetClassifier
-from heat_ir_threshold_locater import HeatIrThresholdLocater
-from cv_bridge import CvBridge, CvBridgeError
-import threading
 
 
 class ThreadWithReturn(threading.Thread):

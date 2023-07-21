@@ -15,7 +15,6 @@
 
 #include "modules/DroneMovementController/DroneMovementController.hpp"
 #include "modules/BasicController/PIDController.hpp"
-#include "modules/BasicController/PIDController.hpp"
 
 namespace FFDS {
 namespace MODULES {

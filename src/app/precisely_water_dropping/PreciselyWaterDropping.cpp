@@ -74,8 +74,8 @@ void PreciselyWaterDropper::run() {
   }
 
   // STEP: 4 return home & land.
-  // drone_controller.ctrlDroneReturnHome();
-  // drone_controller.ctrlDroneLand();
+  drone_controller.ctrlDroneReturnHome();
+  drone_controller.ctrlDroneLand();
 }
 }  // namespace APP
 }  // namespace FFDS
