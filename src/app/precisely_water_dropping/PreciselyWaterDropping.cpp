@@ -84,5 +84,5 @@ int main(int agrc, char* argv[]) {
   // STEP：1 fly around the water and then come close to the water...
   // STEP：2 precisely drop the water.
   FFDS::APP::PreciselyWaterDropper dropper(200, 200, 10, 10);
-  // dropper.run();
+  dropper.run();
 }
